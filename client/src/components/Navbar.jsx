@@ -47,7 +47,7 @@ const Navbar = () => {
         group-hover:rotate-12
         "
     />
-              <h2 className="text-3xl font-extrabold tracking-tight text-emerald-600 transition-all duration-300 group-hover:scale-105"> FreshCart</h2>
+              <h2 className="text-3xl font-extrabold tracking-tight text-emerald-600 transition-all duration-300 group-hover:scale-105"> FreshMart</h2>
          </Link>
 
             {/* Desktop Menu */}
