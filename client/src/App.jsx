@@ -1,8 +1,8 @@
 import React from 'react'
 import Navbar from './components/Navbar'
 import { Route, Routes, useLocation } from 'react-router-dom'
-import Home from './pages/Home'
-import Products from './pages/Products'
+import Home from './pages/Home' 
+import Products from './pages/Products' 
 import ProductDetails from './pages/ProductDetails'
 import Cart from './pages/Cart'
 import { useContext } from 'react'
@@ -11,17 +11,26 @@ import MyOrders from './pages/MyOrders'
 import Auth from './models/Auth'
 import ProductCategory from './pages/ProductCategory'
 import Footer from './components/Footer'
+import { Toaster } from 'react-hot-toast'
+import AddAddress from './pages/AddAddress'
+import SellerLogin from './components/seller/SellerLogin'
+import SellerLayout from './pages/seller/Sellerlayout'
+import AddProduct from "./pages/seller/AddProduct"
+import ProductList from "./pages/seller/ProductList";
+import Orders from "./pages/seller/Orders";
+import Dashboard from "./pages/seller/Dashboard";
+import Setting from './pages/seller/Setting'
 
 const App = () => {
    const {isSeller , showUserLogin } = useContext(AppContext);
-  const isSellerPath = useLocation().pathname.includes("seller");
-  return (
+   const isSellerPath = useLocation().pathname.includes("seller");
+   return (
 
-    <div className='text-default min-h-screen '>
+    <div className='text-default min-h-screen'>
 
     {isSellerPath ? null : <Navbar/>}
-
    {showUserLogin ? <Auth/> : null}
+   <Toaster/>
 
     <div  className='px-6 md:px-16 lg:px-24 xl:px-15 '>
       <Routes>
@@ -32,6 +41,21 @@ const App = () => {
         <Route path="/products/:category" element={<ProductCategory/>}/>
         <Route path="/cart" element={<Cart/>}/>  
         <Route path="/my-orders" element={<MyOrders/>}/>
+        <Route path="/add-address" element={<AddAddress/>}/>
+
+             <Route
+            path="/seller"
+            element={isSeller ? <SellerLayout /> : <SellerLogin />}
+          >
+            <Route index  element={isSeller ? <AddProduct /> : null} />
+            <Route
+              path="product-list"
+              element={isSeller ? <ProductList /> : null}
+            />
+            <Route path="orders" element={isSeller ? <Orders /> : null} />
+            <Route path="dashboard" element={isSeller ? <Dashboard /> : null} />
+            <Route path="setting" element={isSeller ? <Setting /> : null} />
+          </Route>
 
       </Routes>
     </div>

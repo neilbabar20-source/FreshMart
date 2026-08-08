@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { assets } from "../assets/assets"
 import { Link } from "react-router-dom"
 import { AppContext, useAppContext } from "../context/AppContext"
@@ -9,7 +9,13 @@ import { FaBasketShopping } from "react-icons/fa6";
 
 const Navbar = () => {
     const [open, setOpen] = useState(false)
-    const { user, setUser, navigate, setShowUserLogin } = useContext(AppContext);
+    const { user, setUser, navigate, setShowUserLogin, cartCount, searchQuery , setSearchQuery, } = useContext(AppContext);
+      useEffect(() => {
+    if (searchQuery.length > 0) {
+      navigate("/products");
+    }
+  }, [searchQuery]);
+    
     return (
         <nav className="  sticky
     top-0
@@ -96,7 +102,8 @@ hover:border-emerald-300
 focus-within:border-emerald-500
 focus-within:ring-2
 focus-within:ring-emerald-100">
-                    <input className="w-full
+                    <input  onChange={(e) => setSearchQuery(e.target.value)}
+className="w-full
 bg-transparent
 outline-none
 text-gray-700
@@ -119,7 +126,7 @@ hover:scale-110">
                     <button className="absolute -top-2 -right-3 text-[11px] text-white bg-emerald-600 w-5
 h-5
 font-semibold rounded-full">
-                        3
+                        {cartCount()}
                         </button>
                 </div>
 

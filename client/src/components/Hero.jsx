@@ -18,11 +18,11 @@ const Hero = () => {
 </h1> */}
         <div className='flex items-center mt-6 font-bold gap-6'>
 
-        <Link to="/products" className='flex group items-center gap-2 px-8 py-3 rounded-full text-white bg-primary cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg'>Shop Now
+        <Link to="/products" className='flex group items-center mt-120 gap-2 px-8 py-3 rounded-full text-white bg-pink-200 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg'>Shop Now
         <img src= {assets.white_arrow_icon} alt="" className='transition-transform duration-300 group-hover:translate-x-1'/>
         </Link>
         
-         <Link to="/products" className='hidden md:flex group items-center gap-2 px-7 rounded-full text-white py-3  bg-primary cursor-pointer transition hover:scale-105'>
+         <Link to="/products" className='hidden md:flex group items-center mt-120 gap-2 px-7 rounded-full text-white py-3  bg-pink-200 cursor-pointer transition hover:scale-105'>
          Explore Deals <img src={assets.white_arrow_icon} alt='' className="transition-transform duration-300 group-hover:translate-x-1"/>
         </Link>
 
