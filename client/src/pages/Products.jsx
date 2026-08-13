@@ -23,6 +23,7 @@ const Products = () => {
   return (
      <div className="mt-16">
       <h1 className="text-3xl lg:text-4xl font-medium">All Products</h1>
+       <div className="mt-2 h-1 w-16 rounded-full bg-green-500"></div>
       <div className="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 items-center justify-center">
         {filteredProducts
           .filter((product) => product.inStock)

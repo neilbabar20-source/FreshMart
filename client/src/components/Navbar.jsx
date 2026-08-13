@@ -3,7 +3,7 @@ import { assets } from "../assets/assets"
 import { Link } from "react-router-dom"
 import { AppContext, useAppContext } from "../context/AppContext"
 import { useContext } from "react"
-import { FaBasketShopping } from "react-icons/fa6";
+import { FaBasketShopping, FaTruckFast } from "react-icons/fa6";
 
 
 
@@ -27,14 +27,19 @@ const Navbar = () => {
     md:px-16
     lg:px-24
     xl:px-32
-    py-5
-    bg-white/90
+    py-2.5
     backdrop-blur-md
     border-b
     border-gray-200
     shadow-sm
     transition-all
-    duration-300bg-white/90">
+    duration-300
+    "
+    style={{
+        background:
+    "linear-gradient(to right, #ecfccb 0%, #ffffff 15%, #ffffff 85%, #ecfccb 100%)",
+}}
+    >
 
          <Link to="/"  className="flex items-center gap-2 group">
          {/* <img className="h-9" src={assets.logo} alt="logo"></img> */}

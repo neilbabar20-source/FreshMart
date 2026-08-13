@@ -3,9 +3,22 @@ import { assets } from '../assets/assets'
 
 const BottomBanner = () => {
   return (
-    <div className='relative mt-24'>
-      <img  src ={assets.bottom_banner_image} alt='banner' className='w-full hidden md:block'/>
-       <img  src ={assets.bottom_banner_image_sm} alt='banner' className='w-full  md:hidden'/>
+    <div className="relative mt-20 overflow-hidden rounded-2xl shadow-sm transition-all duration-500 hover:shadow-md scroll-reveal">
+
+      {/* Desktop Banner */}
+      <img
+        src={assets.bottom_banner_image}
+        alt="FreshMart offers"
+        className="hidden md:block w-full transition-transform duration-500 hover:scale-[1.01]"
+      />
+
+      {/* Mobile Banner */}
+      <img
+        src={assets.bottom_banner_image_sm}
+        alt="FreshMart offers"
+        className="block md:hidden w-full transition-transform duration-500 hover:scale-[1.01]"
+      />
+
     </div>
   )
 }

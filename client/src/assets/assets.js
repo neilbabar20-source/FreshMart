@@ -69,9 +69,15 @@ import vanilla_muffins_image from "./vanilla_muffins_image.png";
 import quinoa_image from "./quinoa_image.png";
 import brown_rice_image from "./brown_rice_image.png";
 import barley_image from "./barley_image.png";
-import heroDesktop from "./hero/hero-desktop.png";
-import heroMobile from "./hero/hero-mobile.png";
 
+import hero1Desktop from './hero/hero1-desktop.png'
+import hero1Mobile from './hero/hero1-mobile.png'
+
+import hero2Desktop from './hero/hero2-desktop.png'
+import hero2Mobile from './hero/hero2-mobile.png'
+
+import hero3Desktop from './hero/hero3-desktop.png'
+import hero3Mobile from './hero/hero3-mobile.png'
 
 export const assets = {
   logo,
@@ -101,8 +107,12 @@ export const assets = {
   bottom_banner_image_sm,
   add_address_iamge,
   box_icon,
-  heroDesktop,
-  heroMobile,
+hero1Desktop,
+hero1Mobile,
+hero2Desktop,
+hero2Mobile,
+hero3Desktop,
+hero3Mobile,
 };
 
 export const categories = [
@@ -212,7 +222,7 @@ export const dummyProducts = [
     name: "Potato 500g",
     category: "Vegetables",
     price: 25,
-    offerPrice: 20,
+    offerPrice: 22,
     image: [potato_image_1, potato_image_2, potato_image_3, potato_image_4],
     description: [
       "Fresh and organic",

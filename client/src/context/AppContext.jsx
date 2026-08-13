@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import {useNavigate} from "react-router-dom"
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
+
+
 export const AppContext = createContext(null);
 
 export const AppContextProvider = ({children}) =>{
@@ -12,7 +14,7 @@ export const AppContextProvider = ({children}) =>{
      const [showUserLogin, setShowUserLogin] = useState(false)
      const[products , setProducts] = useState([])
       const[cartItems , setCartItems] = useState({})
-      const[searchQuery , setSearchQuery] = useState({})
+      const[searchQuery , setSearchQuery] = useState("")
 
       const [darkMode, setDarkMode] = useState(
   localStorage.getItem("theme") === "dark"
