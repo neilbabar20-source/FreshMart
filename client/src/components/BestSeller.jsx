@@ -6,7 +6,7 @@ const BestSeller = () => {
   const { products } = useContext(AppContext);
 
   return (
-    <div className="mt-16 rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-7 md:px-7 scroll-reveal">
+    <div className="mt-16 rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-7 md:px-7">
 
       {/* Section Heading */}
       <p className="text-2xl md:text-3xl font-semibold text-gray-800">

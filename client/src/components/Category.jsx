@@ -16,7 +16,7 @@ const Category = () => {
       <div className="mt-2 h-1 w-16 rounded-full bg-green-500"></div>
 
       {/* Categories Carousel */}
-      <div className="my-6 flex gap-5 pb-2 overflow-x-auto scroll-smooth category-scrollbar  scroll-stagger">
+      <div className="my-6 flex gap-5 pb-2 overflow-x-auto scroll-smooth category-scrollbar ">
 
         {categories.map((category, index) => (
           <div

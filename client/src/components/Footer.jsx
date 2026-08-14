@@ -15,7 +15,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="mt-20 bg-[#123524] text-white scroll-reveal">
+    <footer className="mt-20 bg-[#123524] text-white">
 
       {/* Main Footer */}
       <div className="py-14 px-6 md:px-16 lg:px-24 xl:px-32">

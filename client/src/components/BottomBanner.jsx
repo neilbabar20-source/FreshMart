@@ -3,7 +3,7 @@ import { assets } from '../assets/assets'
 
 const BottomBanner = () => {
   return (
-    <div className="relative mt-20 overflow-hidden rounded-2xl shadow-sm transition-all duration-500 hover:shadow-md scroll-reveal">
+    <div className="relative mt-20 overflow-hidden rounded-2xl shadow-sm transition-all duration-500 hover:shadow-md ">
 
       {/* Desktop Banner */}
       <img

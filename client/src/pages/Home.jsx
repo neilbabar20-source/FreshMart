@@ -6,11 +6,11 @@ import BottomBanner from '../components/BottomBanner'
 import Announcement from '../components/Announcement'
 import { Link } from 'react-router-dom'
 import { FaTruckFast } from "react-icons/fa6";
-import scrollReveal from '../hooks/scrollReveal'
+// import scrollReveal from '../hooks/scrollReveal'
 
 const Home = () => {
 
-  scrollReveal();
+  // scrollReveal();
 
   return (
     <div>
