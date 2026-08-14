@@ -1,44 +1,43 @@
-const Announcement = () => {
 
-  const announcements = [
-    "🔥 Get 20% OFF on your first order",
-    "🚚 Free delivery on orders above ₹499",
-    "🥬 Fresh groceries delivered to your doorstep",
-    "💳 Easy & secure payments on every order",
-  ]
+import React from "react";
+
+const Announcement = () => {
+  const messages = [
+    "🥬 Fresh & Quality Groceries",
+    "🚚 Fast & Reliable Delivery",
+    "🎁 Great Offers Every Day",
+    "💚 Trusted by FreshMart Customers",
+    "🥑 Fresh Products, Better Choices",
+    "⚡ Quick Delivery to Your Doorstep",
+  ];
 
   return (
-  <div
-  className="relative mt-1.5 left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-gray-950 text-white"
-  style={{
-    borderTop: "2px dotted rgba(255,255,255,0.8)",
-    borderBottom: "2px dotted rgba(255,255,255,0.8)",
-  }}
->
-      
-      <div className="flex whitespace-nowrap animate-marquee">
+    <div className="announcement-bar">
+      <div className="announcement-track">
 
-        {announcements.map((item, index) => (
-          <span
-            key={index}
-            className="mx-10 py-1.5 text-xs md:text-sm font-medium"
-          >
-            {item}
-          </span>
-        ))}
+        {/* First Set */}
+        <div className="announcement-content">
+          {messages.map((message, index) => (
+            <React.Fragment key={`first-${index}`}>
+              <span>{message}</span>
+              <span className="announcement-dot">•</span>
+            </React.Fragment>
+          ))}
+        </div>
 
-        {announcements.map((item, index) => (
-          <span
-            key={`duplicate-${index}`}
-            className="mx-10 py-1.5 text-xs md:text-sm font-medium"
-          >
-            {item}
-          </span>
-        ))}
+        {/* Duplicate Set for Seamless Loop */}
+        <div className="announcement-content">
+          {messages.map((message, index) => (
+            <React.Fragment key={`second-${index}`}>
+              <span>{message}</span>
+              <span className="announcement-dot">•</span>
+            </React.Fragment>
+          ))}
+        </div>
 
       </div>
-
     </div>
-  )
-}
+  );
+};
+
 export default Announcement;

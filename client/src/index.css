@@ -1,19 +1,100 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 
-
 @custom-variant dark (&:where(.dark, .dark *));
 
-*{
-    font-family: "Outfit", sans-serif;
+* {
+  font-family: "Outfit", sans-serif;
 }
 
 @theme {
-    --color-primary: #059669;
-    --color-primary-hover: #047857;
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
 }
 
-@keyframes marquee {
+
+/* =========================================
+   FreshMart Announcement Bar
+   FULL VIEWPORT WIDTH
+========================================= */
+
+.announcement-bar {
+  width: 100vw;
+  max-width: 100vw;
+
+  /* Break out of any centered/max-width parent */
+  margin-left: calc(50% - 50vw);
+
+  overflow: hidden;
+
+  background: linear-gradient(
+    to right,
+    #f0fdf4,
+    #ecfdf5,
+    #f0fdf4
+  );
+
+  border-top: 1px solid #d1fae5;
+  border-bottom: 1px solid #d1fae5;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================
+   Moving Track
+========================================= */
+
+.announcement-track {
+  display: flex;
+  width: max-content;
+  min-width: max-content;
+
+  animation: announcementMarquee 30s linear infinite;
+
+  will-change: transform;
+}
+
+
+/* =========================================
+   Announcement Content
+========================================= */
+
+.announcement-content {
+  display: flex;
+  align-items: center;
+
+  gap: 45px;
+
+  padding: 9px 22px;
+
+  white-space: nowrap;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #065f46;
+
+  box-sizing: border-box;
+}
+
+
+/* Individual announcement items */
+
+.announcement-content span {
+  display: inline-flex;
+  align-items: center;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   Seamless Moving Animation
+========================================= */
+
+@keyframes announcementMarquee {
   from {
     transform: translateX(0);
   }
@@ -23,11 +104,40 @@
   }
 }
 
-.animate-marquee {
-   animation: marquee 25s linear infinite;
+
+/* =========================================
+   Mobile Announcement
+========================================= */
+
+@media (max-width: 640px) {
+
+  .announcement-track {
+    animation-duration: 24s;
+  }
+
+  .announcement-content {
+    gap: 28px;
+
+    padding: 8px 14px;
+
+    font-size: 12px;
+  }
 }
 
-/* Category horizontal scrollbar */
+
+/* =========================================
+   Old Marquee Support
+========================================= */
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+
+
+/* =========================================
+   Category Horizontal Scrollbar
+========================================= */
+
 .category-scrollbar::-webkit-scrollbar {
   height: 4px;
 }
@@ -47,6 +157,10 @@
 }
 
 
+/* =========================================
+   Hero Content Animation
+========================================= */
+
 @keyframes heroContentReveal {
   from {
     opacity: 0;
@@ -62,6 +176,3 @@
 .hero-content-active {
   animation: heroContentReveal 0.8s ease-out forwards;
 }
-
-
-
