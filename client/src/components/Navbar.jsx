@@ -5,10 +5,12 @@ import { AppContext } from "../context/AppContext";
 import {
   FaBasketShopping,
   FaMagnifyingGlass,
+  FaXmark,
 } from "react-icons/fa6";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const {
     user,
@@ -31,18 +33,24 @@ const Navbar = () => {
   };
 
   const handleMobileSearch = () => {
-    closeMenu();
-    navigate("/products");
-  };
-
-  const handleMobileLogin = () => {
-    closeMenu();
-    setShowUserLogin(true);
+    setMobileSearchOpen((prev) => !prev);
+    setOpen(false);
   };
 
   const handleMobileCart = () => {
-    closeMenu();
+    setMobileSearchOpen(false);
+    setOpen(false);
     navigate("/cart");
+  };
+
+  const handleMobileLogin = () => {
+    setMobileSearchOpen(false);
+    setOpen(false);
+    setShowUserLogin(true);
+  };
+
+  const handleMobileSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -108,7 +116,7 @@ const Navbar = () => {
 
       {/* =====================================================
           DESKTOP MENU
-          DO NOT CHANGE
+          SAME AS BEFORE
       ====================================================== */}
       <div className="hidden sm:flex items-center gap-8">
 
@@ -186,6 +194,7 @@ const Navbar = () => {
           "
         >
           <input
+            value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="
               w-full
@@ -313,9 +322,7 @@ const Navbar = () => {
           </div>
         ) : (
           <button
-            onClick={() => {
-              setShowUserLogin(true);
-            }}
+            onClick={() => setShowUserLogin(true)}
             className="
               cursor-pointer
               px-7
@@ -343,22 +350,21 @@ const Navbar = () => {
       ====================================================== */}
       <div className="flex sm:hidden items-center gap-4">
 
-        {/* Search Icon */}
+        {/* Search */}
         <button
           onClick={handleMobileSearch}
           aria-label="Search products"
-          className="
-            text-gray-700
-            hover:text-emerald-600
-            transition-colors
-            duration-200
-          "
+          className="text-gray-700 hover:text-emerald-600 transition-colors"
         >
-          <FaMagnifyingGlass className="text-[20px]" />
+          {mobileSearchOpen ? (
+            <FaXmark className="text-[22px]" />
+          ) : (
+            <FaMagnifyingGlass className="text-[20px]" />
+          )}
         </button>
 
 
-        {/* Mobile Cart */}
+        {/* Cart */}
         <button
           onClick={handleMobileCart}
           aria-label="Shopping cart"
@@ -367,7 +373,6 @@ const Navbar = () => {
             text-gray-700
             hover:text-emerald-600
             transition-colors
-            duration-200
           "
         >
           <img
@@ -400,14 +405,12 @@ const Navbar = () => {
 
         {/* Hamburger */}
         <button
-          onClick={() => setOpen(!open)}
+          onClick={() => {
+            setOpen(!open);
+            setMobileSearchOpen(false);
+          }}
           aria-label="Menu"
-          className="
-            text-gray-700
-            hover:text-emerald-600
-            transition-colors
-            duration-200
-          "
+          className="text-gray-700 hover:text-emerald-600"
         >
           <svg
             width="28"
@@ -416,34 +419,68 @@ const Navbar = () => {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <rect
-              width="28"
-              height="2"
-              rx="1"
-              fill="#426287"
-            />
-
-            <rect
-              x="9"
-              y="10"
-              width="19"
-              height="2"
-              rx="1"
-              fill="#426287"
-            />
-
-            <rect
-              x="7"
-              y="20"
-              width="21"
-              height="2"
-              rx="1"
-              fill="#426287"
-            />
+            <rect width="28" height="2" rx="1" fill="#426287" />
+            <rect x="9" y="10" width="19" height="2" rx="1" fill="#426287" />
+            <rect x="7" y="20" width="21" height="2" rx="1" fill="#426287" />
           </svg>
         </button>
 
       </div>
+
+
+      {/* =====================================================
+          MOBILE SEARCH BOX
+      ====================================================== */}
+      {mobileSearchOpen && (
+        <div
+          className="
+            absolute
+            top-full
+            left-0
+            w-full
+            bg-white
+            border-t
+            border-gray-100
+            shadow-md
+            sm:hidden
+            px-5
+            py-3
+          "
+        >
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+              bg-gray-50
+              border
+              border-gray-200
+              rounded-full
+              px-4
+              py-2.5
+              focus-within:border-emerald-500
+            "
+          >
+            <FaMagnifyingGlass className="text-gray-400 text-sm" />
+
+            <input
+              autoFocus
+              value={searchQuery}
+              onChange={handleMobileSearchChange}
+              type="text"
+              placeholder="Search fresh groceries..."
+              className="
+                w-full
+                bg-transparent
+                outline-none
+                text-sm
+                text-gray-700
+                placeholder:text-gray-400
+              "
+            />
+          </div>
+        </div>
+      )}
 
 
       {/* =====================================================
@@ -504,10 +541,9 @@ const Navbar = () => {
           </Link>
 
 
-          {/* Login / User */}
+          {/* Logged-in user */}
           {user ? (
-            <div className="pt-3">
-
+            <>
               <button
                 onClick={() => {
                   closeMenu();
@@ -543,29 +579,25 @@ const Navbar = () => {
               >
                 Logout
               </button>
-
-            </div>
+            </>
           ) : (
-            <div className="pt-4">
-
-              <button
-                onClick={handleMobileLogin}
-                className="
-                  w-full
-                  py-3
-                  bg-emerald-600
-                  hover:bg-emerald-700
-                  text-white
-                  font-semibold
-                  rounded-full
-                  transition-colors
-                  duration-200
-                "
-              >
-                Login
-              </button>
-
-            </div>
+            <button
+              onClick={handleMobileLogin}
+              className="
+                w-full
+                mt-4
+                py-3
+                bg-emerald-600
+                hover:bg-emerald-700
+                text-white
+                font-semibold
+                rounded-full
+                transition-colors
+                duration-200
+              "
+            >
+              Login
+            </button>
           )}
 
         </div>
