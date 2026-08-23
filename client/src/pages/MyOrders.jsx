@@ -1,19 +1,31 @@
-import React from 'react'
-import { useState,useEffect } from 'react';
-import { dummyOrders } from '../assets/assets';
+import { useContext, useEffect, useState } from "react";
+import { dummyOrders } from "../assets/assets";
+import { AppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const MyOrders = () => {
-    const [myOrders, setMyOrders] = useState([]);
-      const fetchOrders = async () => {
-        setMyOrders(dummyOrders)
-    } 
+  const [myOrders, setMyOrders] = useState([]);
+  const { axios, user } = useContext(AppContext);
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get("/api/order/user");
+      if (data.success) {
+        setMyOrders(data.orders);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
-     useEffect(() => {
+  useEffect(() => {
+    if (user) {
       fetchOrders();
-  }, []);
-    
+    }
+  }, [user]);
   return (
-      <div className="mt-12 pb-16">
+    <div className="mt-12 pb-16">
       <div>
         <p className="text-2xl md:text-3xl font-medium">My Orders</p>
       </div>
@@ -38,7 +50,7 @@ const MyOrders = () => {
               <div className="flex items-center mb-4 md:mb-0">
                 <div className="p-4 rounded-lg">
                   <img
-                    src={item.product.image[0]}
+                    src={`http://localhost:5000/images/${item.product.image[0]}`}
                     alt=""
                     className="w-16 h-16"
                   />
@@ -63,7 +75,6 @@ const MyOrders = () => {
         </div>
       ))}
     </div>
-  )
-}
-
-export default MyOrders
+  );
+};
+export default MyOrders;

@@ -3,7 +3,11 @@ import { assets } from "../assets/assets";
 import { AppContext } from '../context/AppContext';
 
 const ProductCard = ({ product }) => {
-  const { navigate, addToCart, removeFromCart, cartItems } = useContext(AppContext);
+  const context = useContext(AppContext);
+
+console.log("PRODUCT CARD FULL CONTEXT:", context);
+
+const { navigate, addToCart, removeFromCart, cartItems } = context;
 
   return (
     product && (
@@ -19,7 +23,7 @@ const ProductCard = ({ product }) => {
         <div className="group cursor-pointer flex items-center justify-center px-2 py-2">
           <img
             className="max-w-26 md:max-w-36 transition-transform duration-300 group-hover:scale-105"
-            src={product.image[0]}
+            src={`http://localhost:5000/images/${product.image[0]}`}
             alt={product.name}
           />
         </div>
@@ -72,7 +76,7 @@ const ProductCard = ({ product }) => {
               className="text-indigo-500"
               onClick={(e) => e.stopPropagation()}
             >
-              {!cartItems[product._id] ? (
+              {!cartItems?.[product._id] ? (
 
                 <button
                   className="flex items-center justify-center gap-1 bg-indigo-50 border border-indigo-200 md:w-[80px] w-[64px] h-[34px] rounded-md text-indigo-600 font-medium transition-all duration-200 hover:bg-indigo-100"

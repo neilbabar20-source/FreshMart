@@ -18,7 +18,7 @@ const app = express();
 
 connectDB()
 connectCloudinary();
-const allowedOrigins = ["https://localhost:5173"];
+const allowedOrigins = ["http://localhost:5173"];
 
 //middleware
 app.use(express.json());
@@ -26,16 +26,15 @@ app.use(cors({origin:allowedOrigins, credentials:true}));
 app.use(cookieParser());
 
 
-//api endpoints
-app.get("/", (req,res) => {
-    res.send("hello")
-})
+//Api Endpoints
+app.use("/images", express.static("uploads"));
+
 
 app.use("/api/user", userRoutes);
 app.use("/api/seller", sellerRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/order", orderRoutes);
 app.use("/api/address", addressRoutes);
 
 const PORT = process.env.PORT || 4000;

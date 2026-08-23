@@ -1,10 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
-
-const AddAddress = () => {
-  const [address, setAddress] = React.useState({
+const Address = () => {
+  const [address, setAddress] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -15,16 +15,31 @@ const AddAddress = () => {
     country: "",
     phone: "",
   });
+  const { axios, user, navigate } = useContext(AppContext);
   const handleChange = (e) => {
     setAddress({ ...address, [e.target.name]: e.target.value });
   };
 
   const submitHanlder = async (e) => {
+    try {
       e.preventDefault();
-      console.log("formData", FormData)
-
+      const { data } = await axios.post("/api/address/add", { address });
+      console.log("data", data);
+      if (data.success) {
+        toast.success(data.message);
+        navigate("/cart");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
-
+  useEffect(() => {
+    if (!user) {
+      navigate("/cart");
+    }
+  }, []);
   return (
     <div className="mt-12 flex flex-col md:flex-row gap-6 p-6 bg-gray-100 rounded-lg shadow-md">
       {/* Left Side: Address Fields */}
@@ -41,7 +56,7 @@ const AddAddress = () => {
             <input
               type="text"
               name="firstName"
-              value={FormData.firstName}
+              value={address.firstName}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -53,7 +68,7 @@ const AddAddress = () => {
             <input
               type="text"
               name="lastName"
-              value={FormData.lastName}
+              value={address.lastName}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -65,7 +80,7 @@ const AddAddress = () => {
             <input
               type="email"
               name="email"
-              value={FormData.email}
+              value={address.email}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -77,7 +92,7 @@ const AddAddress = () => {
             <input
               type="text"
               name="street"
-              value={FormData.street}
+              value={address.street}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -89,7 +104,7 @@ const AddAddress = () => {
             <input
               type="text"
               name="city"
-              value={FormData.city}
+              value={address.city}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -101,7 +116,7 @@ const AddAddress = () => {
             <input
               type="text"
               name="state"
-              value={FormData.state}
+              value={address.state}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -113,7 +128,7 @@ const AddAddress = () => {
             <input
               type="number"
               name="zipCode"
-              value={FormData.zipCode}
+              value={address.zipCode}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -125,7 +140,7 @@ const AddAddress = () => {
             <input
               type="text"
               name="country"
-              value={FormData.country}
+              value={address.country}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -137,7 +152,7 @@ const AddAddress = () => {
             <input
               type="number"
               name="phone"
-              value={FormData.phone}
+              value={address.phone}
               onChange={handleChange}
               className="w-full p-2 border rounded-md"
               required
@@ -167,4 +182,4 @@ const AddAddress = () => {
   );
 };
 
-export default AddAddress;
+export default Address;
