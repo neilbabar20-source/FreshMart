@@ -18,7 +18,10 @@ const app = express();
 
 connectDB()
 connectCloudinary();
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://fresh-mart-qanb-chi.vercel.app"
+];
 
 //middleware
 app.use(express.json());
