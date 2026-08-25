@@ -4,21 +4,13 @@ import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-// Allow cookies to be sent with requests
 axios.defaults.withCredentials = true;
 
-// Production API requests go through Vercel rewrite
-// Local development can still use the backend directly
-if (import.meta.env.DEV) {
-  axios.defaults.baseURL = "http://localhost:5000";
-} else {
-  axios.defaults.baseURL = "";
-}
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
 export const AppContext = createContext(null);
 
 export const AppContextProvider = ({ children }) => {
-
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
