@@ -5,9 +5,14 @@ import { AppContext } from '../context/AppContext';
 const ProductCard = ({ product }) => {
   const context = useContext(AppContext);
 
-console.log("PRODUCT CARD FULL CONTEXT:", context);
+  console.log("PRODUCT CARD FULL CONTEXT:", context);
 
-const { navigate, addToCart, removeFromCart, cartItems } = context;
+  const { navigate, addToCart, removeFromCart, cartItems } = context;
+
+  // Temporary test URL
+  const imageUrl = `https://freshmart-backend-4g4o.onrender.com/images/${product.image[0]}`;
+
+  console.log("IMAGE URL:", imageUrl);
 
   return (
     product && (
@@ -23,7 +28,7 @@ const { navigate, addToCart, removeFromCart, cartItems } = context;
         <div className="group cursor-pointer flex items-center justify-center px-2 py-2">
           <img
             className="max-w-26 md:max-w-36 transition-transform duration-300 group-hover:scale-105"
-            src={`http://localhost:5000/images/${product.image[0]}`}
+            src={imageUrl}
             alt={product.name}
           />
         </div>
@@ -90,7 +95,7 @@ const { navigate, addToCart, removeFromCart, cartItems } = context;
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
-                      d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 1 1-1.167 0"
+                      d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 0 1-1.167 0"
                       stroke="#615fff"
                       strokeLinecap="round"
                       strokeLinejoin="round"
