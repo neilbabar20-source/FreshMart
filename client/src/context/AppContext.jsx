@@ -47,20 +47,26 @@ const fetchSeller = async () => {
   }
 };
 
-    // check user auth status
-  const fetchUser = async () => {
-    try {
-      const { data } = await axios.get("/api/user/is-auth");
-      if (data.success) {
-        setUser(data.user);
-        setCartItems(data.user.cartItems);
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
+  // check user auth status
+const fetchUser = async () => {
+  try {
+    const { data } = await axios.get("/api/user/is-auth");
+
+    if (data.success) {
+      setUser(data.user);
+      setCartItems(data.user.cartItems);
+    } else {
+      setUser(null);
+    }
+  } catch (error) {
+    // 401 means user is simply not logged in
+    if (error.response?.status === 401) {
+      setUser(null);
+    } else {
       toast.error(error.message);
     }
-  };
+  }
+};
 
 
        // Fetch all product data
