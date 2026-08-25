@@ -28,20 +28,24 @@ export const AppContextProvider = ({children}) =>{
 );
  
 
+// check seller status
+const fetchSeller = async () => {
+  try {
+    const { data } = await axios.get("/api/seller/is-auth");
 
-  // check seller status
-  const fetchSeller = async () => {
-    try {
-      const { data } = await axios.get("/api/seller/is-auth");
-      if (data.success) {
-        setIsSeller(true);
-      } else {
-        setIsSeller(false);
-      }
-    } catch (error) {
+    if (data.success) {
+      setIsSeller(true);
+    } else {
+      setIsSeller(false);
+    }
+  } catch (error) {
+    if (error.response?.status === 401) {
+      setIsSeller(false);
+    } else {
       toast.error(error.message);
     }
-  };
+  }
+};
 
     // check user auth status
   const fetchUser = async () => {
