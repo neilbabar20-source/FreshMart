@@ -1,4 +1,3 @@
-
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
@@ -6,6 +5,15 @@ import toast from "react-hot-toast";
 const MyOrders = () => {
   const [myOrders, setMyOrders] = useState([]);
   const { axios, user } = useContext(AppContext);
+
+  // Support both old backend images and new Cloudinary images
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    return image.startsWith("http")
+      ? image
+      : `${import.meta.env.VITE_BACKEND_URL}/images/${image}`;
+  };
 
   const fetchOrders = async () => {
     try {
@@ -55,6 +63,7 @@ const MyOrders = () => {
           </p>
 
           {order.items?.map((item, itemIndex) => {
+
             // Product was deleted from database
             if (!item.product) {
               return (
@@ -76,7 +85,9 @@ const MyOrders = () => {
 
                   <p>
                     Date:{" "}
-                    {new Date(order.createdAt).toLocaleString()}
+                    {new Date(
+                      order.createdAt
+                    ).toLocaleString()}
                   </p>
                 </div>
               );
@@ -92,9 +103,12 @@ const MyOrders = () => {
                 } border-gray-300 flex flex-col md:flex-row md:items-center justify-between p-4 py-5 w-full max-w-4xl`}
               >
                 <div className="flex items-center mb-4 md:mb-0">
+
                   <div className="p-4 rounded-lg">
                     <img
-                      src={`${import.meta.env.VITE_BACKEND_URL}/images/${item.product.image?.[0]}`}
+                      src={getImageUrl(
+                        item.product.image?.[0]
+                      )}
                       alt={item.product.name}
                       className="w-16 h-16 object-contain"
                     />
@@ -122,7 +136,9 @@ const MyOrders = () => {
 
                   <p>
                     Date:{" "}
-                    {new Date(order.createdAt).toLocaleString()}
+                    {new Date(
+                      order.createdAt
+                    ).toLocaleString()}
                   </p>
                 </div>
 
