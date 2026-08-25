@@ -3,16 +3,22 @@ import { categories } from "../assets/assets";
 import ProductCard from "../components/ProductCard";
 import { AppContext } from "../context/AppContext";
 import { useParams } from "react-router-dom";
+
 const ProductCategory = () => {
-  const { products,navigate } = useContext(AppContext);
+  const { products, navigate } = useContext(AppContext);
   const { category } = useParams();
+
   const searchCategory = categories.find(
     (item) => item.path.toLowerCase() === category
   );
 
+  // Show only products from selected category that are in stock
   const filteredProducts = products.filter(
-    (product) => product.category.toLowerCase() === category
+    (product) =>
+      product.category.toLowerCase() === category &&
+      product.inStock === true
   );
+
   return (
     <div className="mt-16">
       {searchCategory && (
@@ -21,7 +27,8 @@ const ProductCategory = () => {
             {searchCategory.text.toUpperCase()}
           </h1>
         </div>
-      )}     
+      )}
+
       {filteredProducts.length > 0 ? (
         <div>
           <div className="my-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 items-center justify-center">
@@ -40,4 +47,5 @@ const ProductCategory = () => {
     </div>
   );
 };
+
 export default ProductCategory;
