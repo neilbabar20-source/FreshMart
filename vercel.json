@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://freshmart-backend-4g4o.onrender.com/api/:path*"
+    }
+  ]
+}
