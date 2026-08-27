@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// register user: /api/user/register
+// register user: /api/user/register      //= new user ko create karna 
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -64,7 +64,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// login user: /api/user/login
+// login user: /api/user/login                   = existing user ka login 
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -123,7 +123,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// logout user: /api/user/logout
+// logout user: /api/user/logout           == user ko laogout
 export const logoutUser = async (req, res) => {
   try {
     res.clearCookie("token", {
@@ -145,7 +145,7 @@ export const logoutUser = async (req, res) => {
   }
 };
 
-// check auth user: /api/user/is-auth
+// check auth user: /api/user/is-auth            // login/aith status check
 export const isAuthUser = async (req, res) => {
   try {
     const userId = req.user;

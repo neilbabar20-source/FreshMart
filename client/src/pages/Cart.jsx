@@ -16,14 +16,9 @@ const Cart = () => {
     user,
   } = useAppContext();
 
-  // State to store products available in cart
   const [cartArray, setCartArray] = useState([]);
-
-  // State for addresses
   const [address, setAddress] = useState([]);
   const [showAddress, setShowAddress] = useState(false);
-
-  // State for selected address
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentOption, setPaymentOption] = useState("COD");
 
@@ -72,6 +67,7 @@ const Cart = () => {
         toast.error(data.message);
       }
     } catch (error) {
+      console.error("GET ADDRESS ERROR:", error);
       toast.error(error.message);
     }
   };
@@ -89,31 +85,74 @@ const Cart = () => {
   }, [products, cartItems]);
 
   const placeOrder = async () => {
+    console.log("1. PLACE ORDER BUTTON CLICKED");
+
     try {
+      console.log("2. Selected Address:", selectedAddress);
+      console.log("3. Payment Option:", paymentOption);
+      console.log("4. Cart Array:", cartArray);
+
       if (!selectedAddress) {
+        console.log("5. NO ADDRESS SELECTED");
         return toast.error("Please select an address");
       }
 
-      // Place order with COD
+      if (cartArray.length === 0) {
+        console.log("5. CART IS EMPTY");
+        return toast.error("Your cart is empty");
+      }
+
+      // COD
       if (paymentOption === "COD") {
-        const { data } = await axios.post("/api/order/cod", {
+        console.log("5. SENDING COD ORDER REQUEST");
+
+        const orderData = {
           items: cartArray.map((item) => ({
             product: item._id,
             quantity: item.quantity,
           })),
           address: selectedAddress._id,
-        });
+        };
+
+        console.log("6. ORDER DATA:", orderData);
+
+        const { data } = await axios.post(
+          "/api/order/cod",
+          orderData
+        );
+
+        console.log("7. COD API RESPONSE:", data);
 
         if (data.success) {
           toast.success(data.message);
+
           setCartItems({});
+
+          console.log("8. ORDER PLACED SUCCESSFULLY");
+
           navigate("/my-orders");
         } else {
           toast.error(data.message);
         }
       }
+
+      // Online Payment
+      else if (paymentOption === "Online") {
+        console.log("ONLINE PAYMENT SELECTED");
+
+        toast.error(
+          "Online payment is not implemented yet. Please select Cash On Delivery."
+        );
+      }
     } catch (error) {
-      toast.error(error.message);
+      console.error("PLACE ORDER ERROR:", error);
+      console.error("PLACE ORDER RESPONSE:", error.response?.data);
+
+      toast.error(
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong while placing the order"
+      );
     }
   };
 
@@ -318,6 +357,7 @@ const Cart = () => {
             onChange={(e) =>
               setPaymentOption(e.target.value)
             }
+            value={paymentOption}
             className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none"
           >
             <option value="COD">
@@ -365,6 +405,7 @@ const Cart = () => {
         </div>
 
         <button
+          type="button"
           onClick={placeOrder}
           className="w-full py-3 mt-6 cursor-pointer bg-indigo-500 text-white font-medium hover:bg-indigo-600 transition"
         >

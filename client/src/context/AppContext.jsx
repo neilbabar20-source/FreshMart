@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dummyProducts } from "../assets/assets";
 import toast from "react-hot-toast";
+
 import axios from "axios";
 
 axios.defaults.withCredentials = true;
@@ -43,6 +44,7 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
+
   // Check user auth status
   const fetchUser = async () => {
     try {
@@ -62,6 +64,7 @@ export const AppContextProvider = ({ children }) => {
       }
     }
   };
+  
 
   // Fetch all product data
   const fetchProducts = async () => {

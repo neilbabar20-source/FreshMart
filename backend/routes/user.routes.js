@@ -3,7 +3,6 @@ import {isAuthUser, loginUser, logoutUser, registerUser} from "../controllers/us
 import authUser from "../middlewares/authUsers.js";
 
 
-// import authUser from "../middlewares/authUser.js";
 
 const router = express.Router();
 router.post("/register", registerUser);
