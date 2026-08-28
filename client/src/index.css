@@ -176,3 +176,15 @@
 .hero-content-active {
   animation: heroContentReveal 0.8s ease-out forwards;
 }
+
+
+
+
+.category-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.category-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

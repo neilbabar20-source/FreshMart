@@ -16,12 +16,50 @@ const ProductCard = ({ product }) => {
           );
           scrollTo(0, 0);
         }}
-        className="border border-gray-200 rounded-xl md:px-4 px-3 py-3 bg-white min-w-56 max-w-56 w-full shadow-sm hover:shadow-md transition-all duration-300"
+        className="
+          border border-gray-200
+          rounded-xl
+          px-2
+          py-2
+          md:px-4
+          md:py-3
+          bg-white
+          w-full
+          min-w-0
+          md:min-w-56
+          md:max-w-56
+          shadow-sm
+          hover:shadow-md
+          transition-all
+          duration-300
+        "
       >
         {/* Product Image */}
-        <div className="group cursor-pointer flex items-center justify-center h-32 md:h-36 px-2 py-2 overflow-hidden">
+        <div
+          className="
+            group
+            cursor-pointer
+            flex
+            items-center
+            justify-center
+            h-28
+            md:h-36
+            px-1
+            md:px-2
+            py-1
+            md:py-2
+            overflow-hidden
+          "
+        >
           <img
-            className="w-[85%] h-[85%] object-contain transition-transform duration-300 group-hover:scale-105"
+            className="
+              w-[85%]
+              h-[85%]
+              object-contain
+              transition-transform
+              duration-300
+              group-hover:scale-105
+            "
             src={
               product.image?.[0]?.startsWith("http")
                 ? product.image[0]
@@ -32,15 +70,25 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Product Information */}
-        <div className="text-gray-500/70 text-sm">
+        <div className="text-gray-500/70 text-sm min-w-0">
 
           {/* Category */}
-          <p className="text-xs text-gray-500">
+          <p className="text-[10px] md:text-xs text-gray-500">
             {product.category}
           </p>
 
           {/* Product Name */}
-          <p className="text-gray-700 font-medium text-lg truncate w-full mt-1">
+          <p
+            className="
+              text-gray-700
+              font-medium
+              text-sm
+              md:text-lg
+              truncate
+              w-full
+              mt-1
+            "
+          >
             {product.name}
           </p>
 
@@ -57,40 +105,88 @@ const ProductCard = ({ product }) => {
                       : assets.star_dull_icon
                   }
                   alt="rating"
-                  className="w-3 md:w-3.5"
+                  className="w-2.5 md:w-3.5"
                 />
               ))}
 
-            <p className="text-xs text-gray-500 ml-1">
+            <p className="text-[10px] md:text-xs text-gray-500 ml-1">
               (4)
             </p>
           </div>
 
           {/* Price + Cart */}
-          <div className="flex items-end justify-between mt-4">
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              gap-1
+              mt-3
+              md:mt-4
+              min-w-0
+            "
+          >
 
             {/* Price */}
-            <p className="md:text-xl text-base font-semibold text-indigo-500">
+            <p
+              className="
+                min-w-0
+                whitespace-nowrap
+                text-sm
+                md:text-xl
+                font-semibold
+                text-indigo-500
+              "
+            >
               ${product.offerPrice}
 
-              <span className="ml-1 text-gray-400 md:text-sm text-xs line-through font-normal">
+              <span
+                className="
+                  ml-1
+                  text-gray-400
+                  text-[10px]
+                  md:text-sm
+                  line-through
+                  font-normal
+                "
+              >
                 ${product.price}
               </span>
             </p>
 
             {/* Cart Button */}
             <div
-              className="text-indigo-500"
+              className="text-indigo-500 flex-shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               {!cartItems?.[product._id] ? (
                 <button
-                  className="flex items-center justify-center gap-1 bg-indigo-50 border border-indigo-200 md:w-[80px] w-[64px] h-[34px] rounded-md text-indigo-600 font-medium transition-all duration-200 hover:bg-indigo-100"
+                  className="
+                    flex
+                    items-center
+                    justify-center
+                    gap-1
+                    bg-indigo-50
+                    border
+                    border-indigo-200
+                    w-[54px]
+                    md:w-[80px]
+                    h-[32px]
+                    md:h-[34px]
+                    rounded-md
+                    text-indigo-600
+                    text-xs
+                    md:text-base
+                    font-medium
+                    transition-all
+                    duration-200
+                    hover:bg-indigo-100
+                  "
                   onClick={() => addToCart(product._id)}
                 >
                   <svg
-                    width="14"
-                    height="14"
+                    width="13"
+                    height="13"
                     viewBox="0 0 14 14"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -106,30 +202,58 @@ const ProductCard = ({ product }) => {
                   Add
                 </button>
               ) : (
-                <div className="flex items-center justify-center gap-2 md:w-20 w-16 h-[34px] bg-indigo-100 rounded-md select-none">
-
+                <div
+                  className="
+                    flex
+                    items-center
+                    justify-center
+                    gap-1
+                    md:gap-2
+                    w-[54px]
+                    md:w-20
+                    h-[32px]
+                    md:h-[34px]
+                    bg-indigo-100
+                    rounded-md
+                    select-none
+                  "
+                >
                   <button
                     onClick={() => removeFromCart(product._id)}
-                    className="cursor-pointer text-md px-2 h-full hover:text-indigo-700"
+                    className="
+                      cursor-pointer
+                      text-sm
+                      md:text-md
+                      px-1
+                      md:px-2
+                      h-full
+                      hover:text-indigo-700
+                    "
                   >
                     -
                   </button>
 
-                  <span className="w-5 text-center">
+                  <span className="w-4 md:w-5 text-center text-xs md:text-base">
                     {cartItems[product._id]}
                   </span>
 
                   <button
                     onClick={() => addToCart(product._id)}
-                    className="cursor-pointer text-md px-2 h-full hover:text-indigo-700"
+                    className="
+                      cursor-pointer
+                      text-sm
+                      md:text-md
+                      px-1
+                      md:px-2
+                      h-full
+                      hover:text-indigo-700
+                    "
                   >
                     +
                   </button>
-
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </div>

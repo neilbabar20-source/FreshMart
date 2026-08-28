@@ -1,6 +1,6 @@
-import React, { useContext } from 'react'
-import { AppContext } from '../context/AppContext'
-import ProductCard from './ProductCard';
+import React, { useContext } from "react";
+import { AppContext } from "../context/AppContext";
+import ProductCard from "./ProductCard";
 
 const BestSeller = () => {
   const { products } = useContext(AppContext);
@@ -17,20 +17,39 @@ const BestSeller = () => {
       <div className="mt-2 h-1 w-16 rounded-full bg-green-500"></div>
 
       {/* Products */}
-      <div className="my-6 flex gap-5 overflow-x-auto scroll-smooth category-scrollbar pb-2 scroll-stagger">
+      <div
+        className="
+          my-6
+          flex
+          gap-3
+          sm:gap-5
+          overflow-x-auto
+          scroll-smooth
+          category-scrollbar
+          pb-2
+          scroll-stagger
+        "
+      >
         {products
           .filter((product) => product.inStock)
           .slice(0, 5)
           .map((product, index) => (
-            <ProductCard
+            <div
               key={index}
-              product={product}
-            />
+              className="shrink-0 w-[calc(50%-6px)] sm:w-auto"
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
       </div>
 
+      {/* Mobile Swipe Hint */}
+      <p className="sm:hidden text-center text-xs text-gray-400 -mt-1">
+        ← Swipe for more →
+      </p>
+
     </div>
-  )
-}
+  );
+};
 
 export default BestSeller;
