@@ -15,7 +15,9 @@ const Address = () => {
     country: "",
     phone: "",
   });
+
   const { axios, user, navigate } = useContext(AppContext);
+
   const handleChange = (e) => {
     setAddress({ ...address, [e.target.name]: e.target.value });
   };
@@ -24,7 +26,9 @@ const Address = () => {
     try {
       e.preventDefault();
       const { data } = await axios.post("/api/address/add", { address });
+
       console.log("data", data);
+
       if (data.success) {
         toast.success(data.message);
         navigate("/cart");
@@ -35,11 +39,13 @@ const Address = () => {
       toast.error(error.message);
     }
   };
+
   useEffect(() => {
     if (!user) {
       navigate("/cart");
     }
   }, []);
+
   return (
     <div className="mt-12 flex flex-col md:flex-row gap-6 p-6 bg-gray-100 rounded-lg shadow-md">
       {/* Left Side: Address Fields */}
@@ -47,6 +53,7 @@ const Address = () => {
         <h2 className="text-xl font-semibold text-gray-700 mb-4">
           Address Details
         </h2>
+
         <form
           onSubmit={submitHanlder}
           className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -75,7 +82,7 @@ const Address = () => {
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <label className="block text-gray-600">Email</label>
             <input
               type="email"
@@ -87,7 +94,7 @@ const Address = () => {
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <label className="block text-gray-600">Street</label>
             <input
               type="text"
@@ -147,7 +154,7 @@ const Address = () => {
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <label className="block text-gray-600">Phone</label>
             <input
               type="number"
@@ -159,7 +166,7 @@ const Address = () => {
             />
           </div>
 
-          <div className="col-span-2">
+          <div className="md:col-span-2">
             <button
               type="submit"
               className="w-full bg-indigo-500 hover:bg-indigo-600 text-white py-2 rounded-md"
