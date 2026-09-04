@@ -17,7 +17,10 @@ const Home = () => {
 
       <Announcement />
 
-      <Hero />
+      {/* Full Width Hero */}
+      <div className="relative left-1/2 w-screen -translate-x-1/2">
+        <Hero />
+      </div>
 
       <section className="py-4 flex justify-center scroll-reveal">
         <Link

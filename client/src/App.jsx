@@ -24,6 +24,7 @@ import Setting from './pages/seller/Setting'
 const App = () => {
    const {isSeller , showUserLogin } = useContext(AppContext);
    const isSellerPath = useLocation().pathname.includes("seller");
+
    return (
 
     <div className='text-default min-h-screen'>
@@ -32,7 +33,7 @@ const App = () => {
    {showUserLogin ? <Auth/> : null}
    <Toaster/>
 
-    <div  className='px-6 md:px-16 lg:px-24 xl:px-15 '>
+    <div className='px-6 md:px-16 lg:px-24 xl:px-15 '>
       <Routes>
 
         <Route path="/" element={<Home/>}/>
@@ -43,23 +44,25 @@ const App = () => {
         <Route path="/my-orders" element={<MyOrders/>}/>
         <Route path="/add-address" element={<AddAddress/>}/>
 
-             <Route
-            path="/seller"
-            element={isSeller ? <SellerLayout /> : <SellerLogin />}
-          >
-            <Route index  element={isSeller ? <AddProduct /> : null} />
-            <Route
-              path="product-list"
-              element={isSeller ? <ProductList /> : null}
-            />
-            <Route path="orders" element={isSeller ? <Orders /> : null} />
-            <Route path="dashboard" element={isSeller ? <Dashboard /> : null} />
-            <Route path="setting" element={isSeller ? <Setting /> : null} />
-          </Route>
+        <Route
+          path="/seller"
+          element={isSeller ? <SellerLayout /> : <SellerLogin />}
+        >
+          <Route index element={isSeller ? <AddProduct /> : null} />
+          <Route
+            path="product-list"
+            element={isSeller ? <ProductList /> : null}
+          />
+          <Route path="orders" element={isSeller ? <Orders /> : null} />
+          <Route path="dashboard" element={isSeller ? <Dashboard /> : null} />
+          <Route path="setting" element={isSeller ? <Setting /> : null} />
+        </Route>
 
       </Routes>
     </div>
-      {isSeller ? null: <Footer/>}
+
+      {isSellerPath ? null : <Footer/>}
+
     </div>
   )
 }

@@ -86,8 +86,8 @@ const Hero = () => {
         relative
         overflow-hidden
         rounded-3xl
-        mx-4 md:mx-8 lg:mx-12
-        mt-6
+        mx-4 md:mx-8 lg:mx-7
+        mt-4
         shadow-lg
       "
       onTouchStart={handleTouchStart}
