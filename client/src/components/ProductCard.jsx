@@ -5,15 +5,26 @@ import { AppContext } from "../context/AppContext";
 const ProductCard = ({ product }) => {
   const context = useContext(AppContext);
 
-  const { navigate, addToCart, removeFromCart, cartItems } = context;
+  const {
+    navigate,
+    addToCart,
+    removeFromCart,
+    cartItems,
+    setSearchQuery,
+  } = context;
 
   return (
     product && (
       <div
         onClick={() => {
+          sessionStorage.setItem("productClick", "true");
+
+          setSearchQuery(product.name);
+
           navigate(
             `/product/${product.category.toLowerCase()}/${product._id}`
           );
+
           scrollTo(0, 0);
         }}
         className="

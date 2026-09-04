@@ -25,8 +25,14 @@ const Navbar = () => {
     setCartItems,
   } = useContext(AppContext);
 
+  // Search behavior
   useEffect(() => {
     if (searchQuery.length > 0) {
+      if (sessionStorage.getItem("productClick") === "true") {
+        sessionStorage.removeItem("productClick");
+        return;
+      }
+
       navigate("/products");
     }
   }, [searchQuery]);
@@ -91,7 +97,10 @@ const Navbar = () => {
       ========================== */}
       <Link
         to="/"
-        onClick={closeMenu}
+        onClick={() => {
+          setSearchQuery("");
+          closeMenu();
+        }}
         className="flex items-center gap-2 group"
       >
         <FaBasketShopping
@@ -111,9 +120,11 @@ const Navbar = () => {
           DESKTOP MENU
       ========================== */}
       <div className="hidden sm:flex items-center gap-8">
+
         {/* Home */}
         <Link
           to="/"
+          onClick={() => setSearchQuery("")}
           className="relative text-[17px] font-semibold text-gray-800
             transition-all duration-300 hover:text-emerald-600
             hover:-translate-y-0.5
@@ -128,6 +139,7 @@ const Navbar = () => {
         {/* All Products */}
         <Link
           to="/products"
+          onClick={() => setSearchQuery("")}
           className="relative text-[17px] font-semibold text-gray-800
             transition-all duration-300 hover:text-emerald-600
             hover:-translate-y-0.5
@@ -227,6 +239,7 @@ const Navbar = () => {
           MOBILE ACTIONS
       ========================== */}
       <div className="flex sm:hidden items-center gap-4">
+
         {/* Search */}
         <button
           onClick={handleMobileSearch}
@@ -334,10 +347,14 @@ const Navbar = () => {
           className="absolute top-full left-0 w-full bg-white
             border-t border-gray-100 shadow-lg sm:hidden px-6 py-4"
         >
+
           {/* Home */}
           <Link
             to="/"
-            onClick={closeMenu}
+            onClick={() => {
+              setSearchQuery("");
+              closeMenu();
+            }}
             className="block py-3 text-base font-medium text-gray-800
               border-b border-gray-100 hover:text-emerald-600"
           >
@@ -347,7 +364,10 @@ const Navbar = () => {
           {/* All Products */}
           <Link
             to="/products"
-            onClick={closeMenu}
+            onClick={() => {
+              setSearchQuery("");
+              closeMenu();
+            }}
             className="block py-3 text-base font-medium text-gray-800
               border-b border-gray-100 hover:text-emerald-600"
           >

@@ -14,6 +14,7 @@ const Cart = () => {
     updateCartItem,
     axios,
     user,
+    setSearchQuery,
   } = useAppContext();
 
   const [cartArray, setCartArray] = useState([]);
@@ -150,8 +151,8 @@ const Cart = () => {
 
       toast.error(
         error.response?.data?.message ||
-        error.message ||
-        "Something went wrong while placing the order"
+          error.message ||
+          "Something went wrong while placing the order"
       );
     }
   };
@@ -267,8 +268,12 @@ const Cart = () => {
           </div>
         ))}
 
+        {/* Continue Shopping */}
         <button
-          onClick={() => navigate("/products")}
+          onClick={() => {
+            setSearchQuery("");
+            navigate("/products");
+          }}
           className="group cursor-pointer flex items-center mt-8 gap-2 text-indigo-500 font-medium"
         >
           <svg
