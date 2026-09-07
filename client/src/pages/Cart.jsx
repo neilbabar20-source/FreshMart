@@ -15,6 +15,7 @@ const Cart = () => {
     axios,
     user,
     setSearchQuery,
+    setShowUserLogin,
   } = useAppContext();
 
   const [cartArray, setCartArray] = useState([]);
@@ -86,6 +87,13 @@ const Cart = () => {
   }, [products, cartItems]);
 
   const placeOrder = async () => {
+    // Guest user → open login popup
+    if (!user) {
+      sessionStorage.setItem("loginRedirect", "/cart");
+      setShowUserLogin(true);
+      return;
+    }
+
     console.log("1. PLACE ORDER BUTTON CLICKED");
 
     try {
@@ -147,7 +155,10 @@ const Cart = () => {
       }
     } catch (error) {
       console.error("PLACE ORDER ERROR:", error);
-      console.error("PLACE ORDER RESPONSE:", error.response?.data);
+      console.error(
+        "PLACE ORDER RESPONSE:",
+        error.response?.data
+      );
 
       toast.error(
         error.response?.data?.message ||
@@ -161,6 +172,7 @@ const Cart = () => {
     <div className="flex flex-col md:flex-row py-16 max-w-6xl w-full px-6 mx-auto">
 
       <div className="flex-1 max-w-4xl">
+
         <h1 className="text-3xl font-medium mb-6">
           Shopping Cart{" "}
           <span className="text-sm text-indigo-500">
@@ -179,6 +191,7 @@ const Cart = () => {
             key={product._id || index}
             className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 items-center text-sm md:text-base font-medium pt-3"
           >
+
             <div className="flex items-center md:gap-6 gap-3">
 
               <div
@@ -198,17 +211,22 @@ const Cart = () => {
               </div>
 
               <div>
+
                 <p className="hidden md:block font-semibold">
                   {product.name}
                 </p>
 
                 <div className="font-normal text-gray-500/70">
+
                   <p>
                     Weight:{" "}
-                    <span>{product.weight || "N/A"}</span>
+                    <span>
+                      {product.weight || "N/A"}
+                    </span>
                   </p>
 
                   <div className="flex items-center">
+
                     <p>Qty:</p>
 
                     <select
@@ -236,9 +254,13 @@ const Cart = () => {
                           </option>
                         ))}
                     </select>
+
                   </div>
+
                 </div>
+
               </div>
+
             </div>
 
             <p className="text-center">
@@ -265,10 +287,12 @@ const Cart = () => {
                 />
               </svg>
             </button>
+
           </div>
         ))}
 
         {/* Continue Shopping */}
+
         <button
           onClick={() => {
             setSearchQuery("");
@@ -294,9 +318,11 @@ const Cart = () => {
 
           Continue Shopping
         </button>
+
       </div>
 
       {/* Order Summary */}
+
       <div className="max-w-[360px] w-full bg-gray-100/40 p-5 max-md:mt-16 border border-gray-300/70">
 
         <h2 className="text-xl md:text-xl font-medium">
@@ -352,6 +378,7 @@ const Cart = () => {
 
               </div>
             )}
+
           </div>
 
           <p className="text-sm font-medium uppercase mt-6">
@@ -373,6 +400,7 @@ const Cart = () => {
               Online Payment
             </option>
           </select>
+
         </div>
 
         <hr className="border-gray-300" />
@@ -400,6 +428,7 @@ const Cart = () => {
 
           <p className="flex justify-between text-lg font-medium mt-3">
             <span>Total Amount:</span>
+
             <span>
               $
               {totalCartAmount() +
@@ -420,6 +449,7 @@ const Cart = () => {
         </button>
 
       </div>
+
     </div>
   ) : null;
 };
