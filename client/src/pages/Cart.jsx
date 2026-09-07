@@ -264,7 +264,7 @@ const Cart = () => {
             </div>
 
             <p className="text-center">
-              ${product.offerPrice * product.quantity}
+              ₹{product.offerPrice * product.quantity}
             </p>
 
             <button
@@ -409,7 +409,7 @@ const Cart = () => {
 
           <p className="flex justify-between">
             <span>Price</span>
-            <span>${totalCartAmount()}</span>
+            <span>₹{totalCartAmount()}</span>
           </p>
 
           <p className="flex justify-between">
@@ -422,7 +422,7 @@ const Cart = () => {
           <p className="flex justify-between">
             <span>Tax (2%)</span>
             <span>
-              ${(totalCartAmount() * 2) / 100}
+              ₹{(totalCartAmount() * 2) / 100}
             </span>
           </p>
 
@@ -430,7 +430,7 @@ const Cart = () => {
             <span>Total Amount:</span>
 
             <span>
-              $
+              ₹
               {totalCartAmount() +
                 (totalCartAmount() * 2) / 100}
             </span>

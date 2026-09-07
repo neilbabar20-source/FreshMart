@@ -79,7 +79,7 @@ const ProductList = () => {
                   </td>
 
                   <td className="px-4 py-3 max-sm:hidden">
-                    ${product.offerPrice}
+                    ₹{product.offerPrice}
                   </td>
 
                   <td className="px-4 py-3">

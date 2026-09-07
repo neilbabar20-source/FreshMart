@@ -149,7 +149,7 @@ const ProductCard = ({ product }) => {
                 text-indigo-500
               "
             >
-              ${product.offerPrice}
+              ₹{product.offerPrice}
 
               <span
                 className="
@@ -161,7 +161,7 @@ const ProductCard = ({ product }) => {
                   font-normal
                 "
               >
-                ${product.price}
+                ₹{product.price}
               </span>
             </p>
 

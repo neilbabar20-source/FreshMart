@@ -58,7 +58,7 @@ const MyOrders = () => {
             </span>
 
             <span>
-              Total Amount: ${order.amount}
+              Total Amount: ₹{order.amount}
             </span>
           </p>
 
@@ -143,7 +143,7 @@ const MyOrders = () => {
                 </div>
 
                 <p className="text-lg">
-                  Amount: $
+                  Amount: ₹
                   {item.product.offerPrice *
                     (item.quantity || 1)}
                 </p>
