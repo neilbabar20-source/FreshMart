@@ -13,6 +13,9 @@ import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import AddAddress from "./pages/AddAddress";
 
+// =========================
+// SELLER IMPORTS
+// =========================
 import SellerLogin from "./components/seller/SellerLogin";
 import SellerRegister from "./pages/seller/SellerRegister";
 import SellerPortal from "./pages/seller/SellerPortal";
@@ -24,6 +27,9 @@ import Orders from "./pages/seller/Orders";
 import Dashboard from "./pages/seller/Dashboard";
 import Setting from "./pages/seller/Setting";
 
+// =========================
+// ADMIN IMPORTS
+// =========================
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -47,10 +53,14 @@ const App = () => {
   return (
     <div className="text-default min-h-screen">
 
-      {/* Customer Navbar */}
+      {/* =========================
+          CUSTOMER NAVBAR
+      ========================= */}
       {!isSellerPath && !isAdminPath && <Navbar />}
 
-      {/* Customer Login */}
+      {/* =========================
+          CUSTOMER LOGIN
+      ========================= */}
       {showUserLogin && !isSellerPath && !isAdminPath ? <Auth /> : null}
 
       <Toaster />
@@ -58,30 +68,56 @@ const App = () => {
       <div className="px-6 md:px-16 lg:px-24 xl:px-15">
         <Routes>
 
-          {/* ================= CUSTOMER ROUTES ================= */}
+          {/* =========================
+              CUSTOMER ROUTES
+          ========================= */}
 
-          <Route path="/" element={<Home />} />
+          {/* Home */}
+          <Route
+            path="/"
+            element={<Home />}
+          />
 
-          <Route path="/products" element={<Products />} />
+          {/* All Products */}
+          <Route
+            path="/products"
+            element={<Products />}
+          />
 
+          {/* Product Details */}
           <Route
             path="/product/:category/:id"
             element={<ProductDetails />}
           />
 
+          {/* Product Category */}
           <Route
             path="/products/:category"
             element={<ProductCategory />}
           />
 
-          <Route path="/cart" element={<Cart />} />
+          {/* Cart */}
+          <Route
+            path="/cart"
+            element={<Cart />}
+          />
 
-          <Route path="/my-orders" element={<MyOrders />} />
+          {/* My Orders */}
+          <Route
+            path="/my-orders"
+            element={<MyOrders />}
+          />
 
-          <Route path="/add-address" element={<AddAddress />} />
+          {/* Add Address */}
+          <Route
+            path="/add-address"
+            element={<AddAddress />}
+          />
 
 
-          {/* ================= SELLER ROUTES ================= */}
+          {/* =========================
+              SELLER ROUTES
+          ========================= */}
 
           {/* Seller Portal */}
           <Route
@@ -130,7 +166,10 @@ const App = () => {
               )
             }
           >
-            <Route index element={<Dashboard />} />
+            <Route
+              index
+              element={<Dashboard />}
+            />
           </Route>
 
           {/* Seller Add Product */}
@@ -144,7 +183,10 @@ const App = () => {
               )
             }
           >
-            <Route index element={<AddProduct />} />
+            <Route
+              index
+              element={<AddProduct />}
+            />
           </Route>
 
           {/* Seller Product List */}
@@ -158,7 +200,10 @@ const App = () => {
               )
             }
           >
-            <Route index element={<ProductList />} />
+            <Route
+              index
+              element={<ProductList />}
+            />
           </Route>
 
           {/* Seller Edit Product */}
@@ -172,7 +217,10 @@ const App = () => {
               )
             }
           >
-            <Route index element={<EditProduct />} />
+            <Route
+              index
+              element={<EditProduct />}
+            />
           </Route>
 
           {/* Seller Orders */}
@@ -186,7 +234,10 @@ const App = () => {
               )
             }
           >
-            <Route index element={<Orders />} />
+            <Route
+              index
+              element={<Orders />}
+            />
           </Route>
 
           {/* Seller Settings */}
@@ -200,11 +251,16 @@ const App = () => {
               )
             }
           >
-            <Route index element={<Setting />} />
+            <Route
+              index
+              element={<Setting />}
+            />
           </Route>
 
 
-          {/* ================= ADMIN ROUTES ================= */}
+          {/* =========================
+              ADMIN ROUTES
+          ========================= */}
 
           {/* Admin Login */}
           <Route
@@ -218,7 +274,9 @@ const App = () => {
             }
           />
 
-          {/* Admin Panel */}
+          {/* Admin Root
+              /admin → /admin/dashboard
+          */}
           <Route
             path="/admin"
             element={
@@ -229,39 +287,94 @@ const App = () => {
                   </p>
                 </div>
               ) : isAdmin ? (
+                <Navigate to="/admin/dashboard" replace />
+              ) : (
+                <Navigate to="/admin/login" replace />
+              )
+            }
+          />
+
+          {/* Admin Dashboard */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              isAdmin ? (
                 <AdminLayout />
               ) : (
                 <Navigate to="/admin/login" replace />
               )
             }
           >
-            {/* Admin Dashboard */}
             <Route
-              path="dashboard"
+              index
               element={<AdminDashboard />}
             />
+          </Route>
 
-            {/* Admin Sellers */}
+          {/* Admin Sellers */}
+          <Route
+            path="/admin/sellers"
+            element={
+              isAdmin ? (
+                <AdminLayout />
+              ) : (
+                <Navigate to="/admin/login" replace />
+              )
+            }
+          >
             <Route
-              path="sellers"
+              index
               element={<AdminSellers />}
             />
+          </Route>
 
-            {/* Admin Products */}
+          {/* Admin Products */}
+          <Route
+            path="/admin/products"
+            element={
+              isAdmin ? (
+                <AdminLayout />
+              ) : (
+                <Navigate to="/admin/login" replace />
+              )
+            }
+          >
             <Route
-              path="products"
+              index
               element={<AdminProducts />}
             />
+          </Route>
 
-            {/* Admin Orders */}
+          {/* Admin Orders */}
+          <Route
+            path="/admin/orders"
+            element={
+              isAdmin ? (
+                <AdminLayout />
+              ) : (
+                <Navigate to="/admin/login" replace />
+              )
+            }
+          >
             <Route
-              path="orders"
+              index
               element={<AdminOrders />}
             />
+          </Route>
 
-            {/* Admin Users */}
+          {/* Admin Users */}
+          <Route
+            path="/admin/users"
+            element={
+              isAdmin ? (
+                <AdminLayout />
+              ) : (
+                <Navigate to="/admin/login" replace />
+              )
+            }
+          >
             <Route
-              path="users"
+              index
               element={<AdminUsers />}
             />
           </Route>
@@ -269,7 +382,9 @@ const App = () => {
         </Routes>
       </div>
 
-      {/* Customer Footer */}
+      {/* =========================
+          CUSTOMER FOOTER
+      ========================= */}
       {!isSellerPath && !isAdminPath && <Footer />}
 
     </div>
