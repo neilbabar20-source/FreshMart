@@ -4,7 +4,7 @@ import { AppContext } from "../context/AppContext";
 import ProductCard from "../components/ProductCard";
 
 const Products = () => {
-  const { products, searchQuery } = useContext(AppContext);
+  const { products, productsLoading, searchQuery } = useContext(AppContext);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
@@ -27,13 +27,27 @@ const Products = () => {
 
       <div className="mt-2 h-1 w-16 rounded-full bg-green-500"></div>
 
-      <div className="my-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 items-center justify-center">
-        {filteredProducts
-          .filter((product) => product.inStock)
-          .map((product, index) => (
-            <ProductCard key={index} product={product} />
-          ))}
-      </div>
+      {productsLoading ? (
+        <div className="my-20 flex flex-col items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-green-500"></div>
+
+          <p className="mt-4 text-gray-500 text-sm">
+            Loading products...
+          </p>
+
+          <p className="mt-1 text-gray-400 text-xs">
+            Please wait
+          </p>
+        </div>
+      ) : (
+        <div className="my-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 items-center justify-center">
+          {filteredProducts
+            .filter((product) => product.inStock)
+            .map((product, index) => (
+              <ProductCard key={index} product={product} />
+            ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -18,6 +18,7 @@ export const AppContextProvider = ({ children }) => {
   const [isSeller, setIsSeller] = useState(null);
   const [showUserLogin, setShowUserLogin] = useState(false);
   const [products, setProducts] = useState([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const [cartItems, setCartItems] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,7 +45,6 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-
   // Check user auth status
   const fetchUser = async () => {
     try {
@@ -64,11 +64,12 @@ export const AppContextProvider = ({ children }) => {
       }
     }
   };
-  
 
   // Fetch all product data
   const fetchProducts = async () => {
     try {
+      setProductsLoading(true);
+
       const { data } = await axios.get("/api/product/list");
 
       console.log("PRODUCT API RESPONSE:", data);
@@ -81,6 +82,8 @@ export const AppContextProvider = ({ children }) => {
     } catch (error) {
       console.log("PRODUCT API ERROR:", error);
       toast.error(error.message);
+    } finally {
+      setProductsLoading(false);
     }
   };
 
@@ -214,6 +217,7 @@ export const AppContextProvider = ({ children }) => {
     showUserLogin,
     setShowUserLogin,
     products,
+    productsLoading,
     addToCart,
     updateCartItem,
     cartCount,
