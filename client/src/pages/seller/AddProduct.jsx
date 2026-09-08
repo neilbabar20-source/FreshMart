@@ -4,16 +4,17 @@ import { AppContext } from "../../context/AppContext";
 import { toast } from "react-hot-toast";
 
 const AddProduct = () => {
-  const { axios } = useContext(AppContext)
-    const [files, setFiles] = useState([]);
+  const { axios } = useContext(AppContext);
+
+  const [files, setFiles] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
+  const [stock, setStock] = useState("");
 
-
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     try {
       e.preventDefault();
 
@@ -23,19 +24,26 @@ const AddProduct = () => {
       formData.append("price", price);
       formData.append("offerPrice", offerPrice);
       formData.append("category", category);
+      formData.append("stock", stock);
 
       for (let i = 0; i < files.length; i++) {
         formData.append("image", files[i]);
       }
 
-      const { data } = await axios.post("/api/product/add-product", formData);
+      const { data } = await axios.post(
+        "/api/product/add-product",
+        formData
+      );
+
       if (data.success) {
         toast.success(data.message);
+
         setName("");
         setDescription("");
         setCategory("");
         setPrice("");
         setOfferPrice("");
+        setStock("");
         setFiles([]);
       } else {
         toast.error(data.message);
@@ -45,11 +53,15 @@ const AddProduct = () => {
     }
   };
 
-    return (
-         <div className="py-10 flex flex-col justify-between bg-white">
-      <form onSubmit={handleSubmit} className="md:p-10 p-4 space-y-5 max-w-lg">
+  return (
+    <div className="py-10 flex flex-col justify-between bg-white">
+      <form
+        onSubmit={handleSubmit}
+        className="md:p-10 p-4 space-y-5 max-w-lg"
+      >
         <div>
           <p className="text-base font-medium">Product Image</p>
+
           <div className="flex flex-wrap items-center gap-3 mt-2">
             {Array(4)
               .fill("")
@@ -66,6 +78,7 @@ const AddProduct = () => {
                     id={`image${index}`}
                     hidden
                   />
+
                   <img
                     className="max-w-24 cursor-pointer"
                     src={
@@ -81,10 +94,15 @@ const AddProduct = () => {
               ))}
           </div>
         </div>
+
         <div className="flex flex-col gap-1 max-w-md">
-          <label className="text-base font-medium" htmlFor="product-name">
+          <label
+            className="text-base font-medium"
+            htmlFor="product-name"
+          >
             Product Name
           </label>
+
           <input
             id="product-name"
             type="text"
@@ -95,6 +113,7 @@ const AddProduct = () => {
             required
           />
         </div>
+
         <div className="flex flex-col gap-1 max-w-md">
           <label
             className="text-base font-medium"
@@ -102,6 +121,7 @@ const AddProduct = () => {
           >
             Product Description
           </label>
+
           <textarea
             id="product-description"
             rows={4}
@@ -111,10 +131,15 @@ const AddProduct = () => {
             placeholder="Type here"
           ></textarea>
         </div>
+
         <div className="w-full flex flex-col gap-1">
-          <label className="text-base font-medium" htmlFor="category">
+          <label
+            className="text-base font-medium"
+            htmlFor="category"
+          >
             Category
           </label>
+
           <select
             id="category"
             value={category}
@@ -122,6 +147,7 @@ const AddProduct = () => {
             className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
           >
             <option value="">Select Category</option>
+
             {categories.map((category, index) => (
               <option value={category.path} key={index}>
                 {category.path}
@@ -129,11 +155,16 @@ const AddProduct = () => {
             ))}
           </select>
         </div>
+
         <div className="flex items-center gap-5 flex-wrap">
           <div className="flex-1 flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="product-price">
+            <label
+              className="text-base font-medium"
+              htmlFor="product-price"
+            >
               Product Price
             </label>
+
             <input
               id="product-price"
               type="number"
@@ -144,10 +175,15 @@ const AddProduct = () => {
               required
             />
           </div>
+
           <div className="flex-1 flex flex-col gap-1 w-32">
-            <label className="text-base font-medium" htmlFor="offer-price">
+            <label
+              className="text-base font-medium"
+              htmlFor="offer-price"
+            >
               Offer Price
             </label>
+
             <input
               id="offer-price"
               type="number"
@@ -159,12 +195,34 @@ const AddProduct = () => {
             />
           </div>
         </div>
+
+        {/* Stock Quantity */}
+        <div className="flex flex-col gap-1 max-w-md">
+          <label
+            className="text-base font-medium"
+            htmlFor="product-stock"
+          >
+            Stock Quantity
+          </label>
+
+          <input
+            id="product-stock"
+            type="number"
+            min="0"
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+            placeholder="Enter available quantity"
+            className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40"
+            required
+          />
+        </div>
+
         <button className="px-8 py-2.5 bg-indigo-500 text-white font-medium rounded">
           ADD
         </button>
       </form>
     </div>
-    );
+  );
 };
 
 export default AddProduct;

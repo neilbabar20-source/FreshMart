@@ -6,61 +6,235 @@ export const placeOrderCOD = async (req, res) => {
   try {
     const userId = req.user;
     const { items, address } = req.body;
-    if (!address || !items ) {
-      return res
-        .status(400)
-        .json({ message: "Itmes and address are required", success: false });
-    }
-    // calculate amount using items;
-    let amount = await items.reduce(async (acc, item) => {
-      const product = await Product.findById(item.product);
-      return (await acc) + product.offerPrice * item.quantity;
-    }, 0);
 
-    // Add tex charfe 2%
+    if (!address || !items || !items.length) {
+      return res.status(400).json({
+        message: "Items and address are required",
+        success: false,
+      });
+    }
+
+    const orderItems = [];
+
+    let amount = 0;
+
+    for (const item of items) {
+      const product = await Product.findById(item.product);
+
+      if (!product) {
+        return res.status(404).json({
+          message: "Product not found",
+          success: false,
+        });
+      }
+
+      if (!product.sellerId) {
+        return res.status(400).json({
+          message: `Seller information missing for product: ${product.name}`,
+          success: false,
+        });
+      }
+
+      orderItems.push({
+        product: product._id,
+        sellerId: product.sellerId,
+        quantity: item.quantity,
+        status: "Order Placed",
+      });
+
+      amount += product.offerPrice * item.quantity;
+    }
+
+    // Add tax charge 2%
     amount += Math.floor((amount * 2) / 100);
+
     await Order.create({
       userId,
-      items,
+      items: orderItems,
       address,
       amount,
       paymentType: "COD",
       isPaid: false,
+      status: "Order Placed",
     });
-    res
-      .status(201)
-      .json({ message: "Order placed successfully", success: true });
+
+    res.status(201).json({
+      message: "Order placed successfully",
+      success: true,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error in placeOrderCOD:", error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
   }
 };
 
-// order details for individual user :/api/order/user
+// Order details for individual user: /api/order/user
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.user;
+
     const orders = await Order.find({
       userId,
       $or: [{ paymentType: "COD" }, { isPaid: true }],
     })
-      .populate("items.product address")
+      .populate("items.product")
+      .populate("items.sellerId", "name storeName")
+      .populate("address")
       .sort({ createdAt: -1 });
-    res.status(200).json({ success: true, orders });
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error in getUserOrders:", error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
   }
 };
 
-// get all orders for admin :/api/order/seller
+// Get all orders for admin
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({
       $or: [{ paymentType: "COD" }, { isPaid: true }],
     })
-      .populate("items.product address")
+      .populate("items.product")
+      .populate("items.sellerId", "name storeName")
+      .populate("address")
       .sort({ createdAt: -1 });
-    res.status(200).json({ success: true, orders });
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error in getAllOrders:", error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
+// Get orders for logged-in seller
+export const getSellerOrders = async (req, res) => {
+  try {
+    const sellerId = req.seller;
+
+    const orders = await Order.find({
+      "items.sellerId": sellerId,
+      $or: [{ paymentType: "COD" }, { isPaid: true }],
+    })
+      .populate("items.product")
+      .populate("items.sellerId", "name storeName")
+      .populate("address")
+      .sort({ createdAt: -1 });
+
+    const sellerOrders = orders.map((order) => {
+      const sellerItems = order.items.filter(
+        (item) =>
+          item.sellerId?._id?.toString() === sellerId.toString()
+      );
+
+      return {
+        ...order.toObject(),
+        items: sellerItems,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      orders: sellerOrders,
+    });
+  } catch (error) {
+    console.error("Error in getSellerOrders:", error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
+// Update order status for logged-in seller
+export const updateSellerOrderStatus = async (req, res) => {
+  try {
+    const sellerId = req.seller;
+    const { orderId, status } = req.body;
+
+    const allowedStatuses = [
+      "Order Placed",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+    ];
+
+    if (!orderId || !status) {
+      return res.status(400).json({
+        message: "Order ID and status are required",
+        success: false,
+      });
+    }
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        message: "Invalid order status",
+        success: false,
+      });
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      "items.sellerId": sellerId,
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found or access denied",
+        success: false,
+      });
+    }
+
+    // Update status only for this seller's items
+    let sellerItemFound = false;
+
+    order.items.forEach((item) => {
+      if (item.sellerId.toString() === sellerId.toString()) {
+        item.status = status;
+        sellerItemFound = true;
+      }
+    });
+
+    if (!sellerItemFound) {
+      return res.status(403).json({
+        message: "You do not have access to this order item",
+        success: false,
+      });
+    }
+
+    await order.save();
+
+    res.status(200).json({
+      message: "Order status updated successfully",
+      success: true,
+      status,
+    });
+  } catch (error) {
+    console.error("Error in updateSellerOrderStatus:", error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
   }
 };

@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 axios.defaults.withCredentials = true;
-
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
 export const AppContext = createContext(null);
@@ -15,7 +14,15 @@ export const AppContextProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
+
+  // Seller authentication
+  const [seller, setSeller] = useState(null);
   const [isSeller, setIsSeller] = useState(null);
+
+  // Admin authentication
+  const [admin, setAdmin] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(null);
+
   const [showUserLogin, setShowUserLogin] = useState(false);
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -26,18 +33,21 @@ export const AppContextProvider = ({ children }) => {
     localStorage.getItem("theme") === "dark"
   );
 
-  // Check seller status
+  // Check seller authentication
   const fetchSeller = async () => {
     try {
       const { data } = await axios.get("/api/seller/is-auth");
 
       if (data.success) {
+        setSeller(data.seller);
         setIsSeller(true);
       } else {
+        setSeller(null);
         setIsSeller(false);
       }
     } catch (error) {
       if (error.response?.status === 401) {
+        setSeller(null);
         setIsSeller(false);
       } else {
         toast.error(error.message);
@@ -45,7 +55,32 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  // Check user auth status
+  // Check admin authentication
+  const fetchAdmin = async () => {
+    try {
+      const { data } = await axios.get("/api/admin/is-auth");
+
+      if (data.success) {
+        setAdmin(data.admin);
+        setIsAdmin(true);
+      } else {
+        setAdmin(null);
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      if (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+      ) {
+        setAdmin(null);
+        setIsAdmin(false);
+      } else {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  // Check user authentication
   const fetchUser = async () => {
     try {
       const { data } = await axios.get("/api/user/is-auth");
@@ -159,6 +194,7 @@ export const AppContextProvider = ({ children }) => {
   useEffect(() => {
     fetchProducts();
     fetchSeller();
+    fetchAdmin();
     fetchUser();
   }, []);
 
@@ -210,27 +246,56 @@ export const AppContextProvider = ({ children }) => {
 
   const value = {
     navigate,
+
+    // Customer
     user,
     setUser,
-    setIsSeller,
+
+    // Seller
+    seller,
+    setSeller,
     isSeller,
+    setIsSeller,
+
+    // Admin
+    admin,
+    setAdmin,
+    isAdmin,
+    setIsAdmin,
+
+    // Authentication UI
     showUserLogin,
     setShowUserLogin,
+
+    // Products
     products,
     productsLoading,
+
+    // Cart
     addToCart,
     updateCartItem,
     cartCount,
     totalCartAmount,
     removeFromCart,
     cartItems,
+    setCartItems,
+
+    // Search
     searchQuery,
     setSearchQuery,
+
+    // Theme
     darkMode,
     toggleTheme,
+
+    // Axios
     axios,
+
+    // Fetch functions
     fetchProducts,
-    setCartItems,
+    fetchSeller,
+    fetchAdmin,
+    fetchUser,
   };
 
   return (

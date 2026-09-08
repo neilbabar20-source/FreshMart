@@ -63,7 +63,6 @@ const MyOrders = () => {
           </p>
 
           {order.items?.map((item, itemIndex) => {
-
             // Product was deleted from database
             if (!item.product) {
               return (
@@ -80,14 +79,12 @@ const MyOrders = () => {
                   </p>
 
                   <p>
-                    Status: {order.status}
+                    Status: {item.status || "Order Placed"}
                   </p>
 
                   <p>
                     Date:{" "}
-                    {new Date(
-                      order.createdAt
-                    ).toLocaleString()}
+                    {new Date(order.createdAt).toLocaleString()}
                   </p>
                 </div>
               );
@@ -103,12 +100,9 @@ const MyOrders = () => {
                 } border-gray-300 flex flex-col md:flex-row md:items-center justify-between p-4 py-5 w-full max-w-4xl`}
               >
                 <div className="flex items-center mb-4 md:mb-0">
-
                   <div className="p-4 rounded-lg">
                     <img
-                      src={getImageUrl(
-                        item.product.image?.[0]
-                      )}
+                      src={getImageUrl(item.product.image?.[0])}
                       alt={item.product.name}
                       className="w-16 h-16 object-contain"
                     />
@@ -131,14 +125,12 @@ const MyOrders = () => {
                   </p>
 
                   <p>
-                    Status: {order.status}
+                    Status: {item.status || "Order Placed"}
                   </p>
 
                   <p>
                     Date:{" "}
-                    {new Date(
-                      order.createdAt
-                    ).toLocaleString()}
+                    {new Date(order.createdAt).toLocaleString()}
                   </p>
                 </div>
 

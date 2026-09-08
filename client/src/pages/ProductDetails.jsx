@@ -76,8 +76,28 @@ const ProductDetails = () => {
               {product.name}
             </h1>
 
+            {/* Seller Information */}
+            {product.sellerId && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">
+                  Sold by{" "}
+                  <span className="font-medium text-gray-800">
+                    {product.sellerId.storeName ||
+                      product.sellerId.name}
+                  </span>
+                </p>
+
+                {product.sellerId.storeName &&
+                  product.sellerId.name && (
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Seller: {product.sellerId.name}
+                    </p>
+                  )}
+              </div>
+            )}
+
             {/* Rating */}
-            <div className="flex items-center gap-0.5 mt-1">
+            <div className="flex items-center gap-0.5 mt-3">
               {Array(5)
                 .fill("")
                 .map((_, i) => (

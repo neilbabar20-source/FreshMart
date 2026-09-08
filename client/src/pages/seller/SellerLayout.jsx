@@ -1,18 +1,21 @@
-import React, { useContext, useState } from 'react'
-import { AppContext } from '../../context/AppContext'
-import { assets } from '../../assets/assets'
-import { NavLink, Outlet } from 'react-router-dom'
+import React, { useContext, useState } from "react";
+import axios from "axios";
+import { AppContext } from "../../context/AppContext";
+import { assets } from "../../assets/assets";
+import { NavLink, Outlet } from "react-router-dom";
 
 const SellerLayout = () => {
   const {
     isSeller,
     setIsSeller,
+    seller,
+    setSeller,
     navigate,
     darkMode,
     toggleTheme,
-  } = useContext(AppContext)
+  } = useContext(AppContext);
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const sidebarLinks = [
     {
@@ -22,7 +25,7 @@ const SellerLayout = () => {
     },
     {
       name: "Add Product",
-      path: "/seller",
+      path: "/seller/add-product",
       icon: assets.add_icon,
     },
     {
@@ -40,7 +43,19 @@ const SellerLayout = () => {
       path: "/seller/setting",
       icon: assets.setting_icon,
     },
-  ]
+  ];
+
+  const handleLogout = async () => {
+    try {
+      await axios.get("/api/seller/logout");
+    } catch (error) {
+      console.log("Seller logout error:", error);
+    } finally {
+      setIsSeller(false);
+      setSeller(null);
+      navigate("/");
+    }
+  };
 
   return (
     <>
@@ -61,17 +76,17 @@ const SellerLayout = () => {
           <h1 className="text-xl md:text-2xl font-semibold whitespace-nowrap">
             FreshMart
           </h1>
-
         </div>
 
         {/* Right side */}
         <div className="flex items-center gap-1 md:gap-5 text-gray-500 flex-shrink-0 ml-3">
 
-          {/* Admin text */}
+          {/* Seller name/store */}
           <p className="text-xs md:text-base whitespace-nowrap">
-            Hi! Admin
+            Hi! {seller?.storeName || seller?.name || "Seller"}
           </p>
 
+          {/* Theme */}
           <button
             onClick={toggleTheme}
             className="border rounded-full text-xs md:text-sm px-2 md:px-4 py-1 cursor-pointer whitespace-nowrap"
@@ -79,16 +94,13 @@ const SellerLayout = () => {
             {darkMode ? "☀️ Light" : "🌙 Dark"}
           </button>
 
+          {/* Logout */}
           <button
-            onClick={() => {
-              setIsSeller(false)
-              navigate("/")
-            }}
+            onClick={handleLogout}
             className="border rounded-full text-xs md:text-sm px-2 md:px-4 py-1 cursor-pointer whitespace-nowrap"
           >
             Logout
           </button>
-
         </div>
       </div>
 
@@ -101,13 +113,13 @@ const SellerLayout = () => {
             <NavLink
               to={item.path}
               key={item.name}
-              end={item.path === "/seller"}
-              className={({ isActive }) => `flex items-center py-3 px-4 gap-3
-                ${
+              className={({ isActive }) =>
+                `flex items-center py-3 px-4 gap-3 ${
                   isActive
                     ? "border-r-4 md:border-r-[6px] bg-indigo-500/10 border-indigo-500 text-indigo-500"
-                    : "hover:bg-gray-100/90 border-white "
-                }`}
+                    : "hover:bg-gray-100/90 border-white"
+                }`
+              }
             >
               <img
                 src={item.icon}
@@ -120,7 +132,6 @@ const SellerLayout = () => {
               </p>
             </NavLink>
           ))}
-
         </div>
 
         {/* Mobile Sidebar Overlay */}
@@ -129,7 +140,6 @@ const SellerLayout = () => {
             className="md:hidden fixed inset-0 z-50 bg-black/30"
             onClick={() => setMobileMenuOpen(false)}
           >
-
             <div
               className="w-64 h-full bg-white border-r border-gray-300 pt-4"
               onClick={(e) => e.stopPropagation()}
@@ -149,14 +159,14 @@ const SellerLayout = () => {
                 <NavLink
                   to={item.path}
                   key={item.name}
-                  end={item.path === "/seller"}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) => `flex items-center py-3 px-4 gap-3
-                    ${
+                  className={({ isActive }) =>
+                    `flex items-center py-3 px-4 gap-3 ${
                       isActive
                         ? "border-r-4 bg-indigo-500/10 border-indigo-500 text-indigo-500"
                         : "hover:bg-gray-100/90 border-white"
-                    }`}
+                    }`
+                  }
                 >
                   <img
                     src={item.icon}
@@ -169,9 +179,7 @@ const SellerLayout = () => {
                   </p>
                 </NavLink>
               ))}
-
             </div>
-
           </div>
         )}
 
@@ -182,7 +190,7 @@ const SellerLayout = () => {
 
       </div>
     </>
-  )
-}
+  );
+};
 
-export default SellerLayout
+export default SellerLayout;
