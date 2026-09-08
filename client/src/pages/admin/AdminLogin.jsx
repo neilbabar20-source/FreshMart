@@ -1,9 +1,14 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
 const AdminLogin = () => {
-  const { axios, navigate } = useContext(AppContext);
+  const {
+    axios,
+    navigate,
+    setAdmin,
+    setIsAdmin,
+  } = useContext(AppContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +30,12 @@ const AdminLogin = () => {
       });
 
       if (data.success) {
+        // Update admin authentication state immediately
+        setAdmin(data.admin);
+        setIsAdmin(true);
+
         toast.success("Admin login successful");
+
         navigate("/admin/dashboard");
       } else {
         toast.error(data.message);
