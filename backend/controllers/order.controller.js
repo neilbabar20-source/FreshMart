@@ -35,14 +35,47 @@ export const placeOrderCOD = async (req, res) => {
         });
       }
 
+      // =========================
+      // STOCK VALIDATION
+      // =========================
+
+      const requestedQuantity = Number(item.quantity);
+
+      if (!requestedQuantity || requestedQuantity < 1) {
+        return res.status(400).json({
+          message: `Invalid quantity for product: ${product.name}`,
+          success: false,
+        });
+      }
+
+      if (!product.inStock || product.stock <= 0) {
+        return res.status(400).json({
+          message: `${product.name} is currently out of stock`,
+          success: false,
+        });
+      }
+
+      if (requestedQuantity > product.stock) {
+        return res.status(400).json({
+          message: `Only ${product.stock} unit${
+            product.stock === 1 ? "" : "s"
+          } of ${product.name} are available`,
+          success: false,
+        });
+      }
+
+      // =========================
+      // ADD ORDER ITEM
+      // =========================
+
       orderItems.push({
         product: product._id,
         sellerId: product.sellerId,
-        quantity: item.quantity,
+        quantity: requestedQuantity,
         status: "Order Placed",
       });
 
-      amount += product.offerPrice * item.quantity;
+      amount += product.offerPrice * requestedQuantity;
     }
 
     // Add tax charge 2%

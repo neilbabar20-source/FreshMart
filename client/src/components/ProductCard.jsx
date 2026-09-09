@@ -1,7 +1,12 @@
 import React, { useContext } from "react";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
-import { FaCartShopping, FaMinus, FaPlus } from "react-icons/fa6";
+import {
+  FaCartShopping,
+  FaMinus,
+  FaPlus,
+  FaBan,
+} from "react-icons/fa6";
 
 const ProductCard = ({ product }) => {
   const context = useContext(AppContext);
@@ -12,6 +17,9 @@ const ProductCard = ({ product }) => {
     removeFromCart,
     cartItems,
   } = context;
+
+  const isOutOfStock =
+    product && (!product.inStock || product.stock <= 0);
 
   return (
     product && (
@@ -64,7 +72,7 @@ const ProductCard = ({ product }) => {
           "
         >
           {/* Discount Badge */}
-          {product.price > product.offerPrice && (
+          {!isOutOfStock && product.price > product.offerPrice && (
             <span
               className="
                 absolute
@@ -89,6 +97,32 @@ const ProductCard = ({ product }) => {
             </span>
           )}
 
+          {/* Out Of Stock Badge */}
+          {isOutOfStock && (
+            <span
+              className="
+                absolute
+                right-2
+                top-2
+                z-10
+                rounded-full
+                border
+                border-red-200
+                bg-red-600
+                px-2
+                py-1
+                text-[9px]
+                md:text-[10px]
+                font-bold
+                tracking-wide
+                text-white
+                shadow-md
+              "
+            >
+              OUT OF STOCK
+            </span>
+          )}
+
           <img
             src={
               product.image?.[0]?.startsWith("http")
@@ -96,14 +130,15 @@ const ProductCard = ({ product }) => {
                 : `${import.meta.env.VITE_BACKEND_URL}/images/${product.image?.[0]}`
             }
             alt={product.name}
-            className="
+            className={`
               h-[88%]
               w-[88%]
               object-contain
               transition-transform
               duration-500
               group-hover:scale-110
-            "
+              ${isOutOfStock ? "opacity-60 grayscale-[20%]" : ""}
+            `}
           />
         </div>
 
@@ -158,7 +193,13 @@ const ProductCard = ({ product }) => {
 
             {/* Price */}
             <div className="min-w-0">
-              <p className="whitespace-nowrap text-sm md:text-lg font-bold text-green-600">
+              <p
+                className={`whitespace-nowrap text-sm md:text-lg font-bold ${
+                  isOutOfStock
+                    ? "text-gray-500"
+                    : "text-green-600"
+                }`}
+              >
                 ₹{product.offerPrice}
 
                 <span className="ml-1 text-[9px] md:text-xs font-normal text-gray-400 line-through">
@@ -172,7 +213,34 @@ const ProductCard = ({ product }) => {
               className="flex-shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
-              {!cartItems?.[product._id] ? (
+              {isOutOfStock ? (
+                /* Out Of Stock Button */
+                <button
+                  disabled
+                  className="
+                    flex
+                    h-8
+                    w-[82px]
+                    md:h-9
+                    md:w-[92px]
+                    cursor-not-allowed
+                    items-center
+                    justify-center
+                    gap-1.5
+                    rounded-lg
+                    border
+                    border-red-200
+                    bg-red-50
+                    text-[9px]
+                    md:text-xs
+                    font-bold
+                    text-red-500
+                  "
+                >
+                  <FaBan className="text-[10px] md:text-xs" />
+                  Out of Stock
+                </button>
+              ) : !cartItems?.[product._id] ? (
                 <button
                   onClick={() => addToCart(product._id)}
                   className="

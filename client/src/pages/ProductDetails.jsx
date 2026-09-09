@@ -9,6 +9,7 @@ import {
   FaCheck,
   FaStore,
   FaBolt,
+  FaBan,
 } from "react-icons/fa6";
 
 const ProductDetails = () => {
@@ -38,12 +39,68 @@ const ProductDetails = () => {
 
   if (!product) return null;
 
+  const isOutOfStock =
+    !product.inStock || product.stock <= 0;
+
   const discount =
     product.price > product.offerPrice
       ? Math.round(
           ((product.price - product.offerPrice) / product.price) * 100
         )
       : 0;
+
+  // Find similar available products for substitution
+  const getProductKeywords = (name) => {
+    const ignoredWords = [
+      "fresh",
+      "organic",
+      "amul",
+      "mother",
+      "dairy",
+      "taaza",
+      "daily",
+      "harvest",
+      "green",
+      "basket",
+    ];
+
+    return name
+      .toLowerCase()
+      .replace(/[^a-z\s]/g, "")
+      .split(/\s+/)
+      .filter(
+        (word) =>
+          word.length > 2 && !ignoredWords.includes(word)
+      );
+  };
+
+  const productKeywords = getProductKeywords(product.name);
+
+  const alternativeProducts = isOutOfStock
+    ? products
+        .filter(
+          (item) =>
+            item._id !== product._id &&
+            item.inStock &&
+            item.stock > 0 &&
+            item.category === product.category
+        )
+        .map((item) => {
+          const itemKeywords = getProductKeywords(item.name);
+
+          const matchingKeywords = itemKeywords.filter((keyword) =>
+            productKeywords.includes(keyword)
+          ).length;
+
+          return {
+            product: item,
+            score: matchingKeywords,
+          };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map((item) => item.product)
+    : [];
 
   return (
     <div className="mt-5 pb-10 md:mt-7">
@@ -113,16 +170,45 @@ const ProductDetails = () => {
           <div className="group relative flex min-h-[300px] flex-1 items-center justify-center overflow-hidden rounded-3xl border border-gray-100 bg-gradient-to-br from-gray-50 via-white to-green-50 p-5 shadow-sm sm:min-h-[400px] md:min-h-[430px]">
 
             {/* Discount Badge */}
-            {discount > 0 && (
+            {!isOutOfStock && discount > 0 && (
               <span className="absolute left-4 top-4 z-10 rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
                 {discount}% OFF
+              </span>
+            )}
+
+            {/* Out Of Stock Badge */}
+            {isOutOfStock && (
+              <span
+                className="
+                  absolute
+                  right-4
+                  top-4
+                  z-10
+                  rounded-full
+                  border
+                  border-red-200
+                  bg-red-600
+                  px-4
+                  py-2
+                  text-xs
+                  font-bold
+                  tracking-wide
+                  text-white
+                  shadow-lg
+                "
+              >
+                OUT OF STOCK
               </span>
             )}
 
             <img
               src={thumbnail}
               alt={product.name}
-              className="h-full max-h-[420px] w-full object-contain transition-transform duration-500 group-hover:scale-105"
+              className={`h-full max-h-[420px] w-full object-contain transition-transform duration-500 group-hover:scale-105 ${
+                isOutOfStock
+                  ? "opacity-60 grayscale-[15%]"
+                  : ""
+              }`}
             />
           </div>
         </div>
@@ -196,9 +282,21 @@ const ProductDetails = () => {
           </div>
 
           {/* Price Section */}
-          <div className="mt-6 rounded-2xl border border-green-100 bg-green-50/60 p-4">
+          <div
+            className={`mt-6 rounded-2xl border p-4 ${
+              isOutOfStock
+                ? "border-gray-200 bg-gray-50"
+                : "border-green-100 bg-green-50/60"
+            }`}
+          >
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-3xl font-semibold text-green-700">
+              <span
+                className={`text-3xl font-semibold ${
+                  isOutOfStock
+                    ? "text-gray-600"
+                    : "text-green-700"
+                }`}
+              >
                 ₹{product.offerPrice}
               </span>
 
@@ -208,9 +306,11 @@ const ProductDetails = () => {
                     ₹{product.price}
                   </span>
 
-                  <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">
-                    {discount}% OFF
-                  </span>
+                  {!isOutOfStock && (
+                    <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">
+                      {discount}% OFF
+                    </span>
+                  )}
                 </>
               )}
             </div>
@@ -220,16 +320,32 @@ const ProductDetails = () => {
             </p>
           </div>
 
-          {/* Stock */}
+          {/* Stock Status */}
           <div className="mt-4 flex items-center gap-2 text-sm">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-600">
-              <FaCheck className="text-[10px]" />
+            <span
+              className={`flex h-5 w-5 items-center justify-center rounded-full ${
+                isOutOfStock
+                  ? "bg-red-100 text-red-600"
+                  : "bg-green-100 text-green-600"
+              }`}
+            >
+              {isOutOfStock ? (
+                <FaBan className="text-[10px]" />
+              ) : (
+                <FaCheck className="text-[10px]" />
+              )}
             </span>
 
-            <span className="font-medium text-green-700">
-              {product.inStock
-                ? "In stock & available"
-                : "Currently unavailable"}
+            <span
+              className={`font-semibold ${
+                isOutOfStock
+                  ? "text-red-600"
+                  : "text-green-700"
+              }`}
+            >
+              {isOutOfStock
+                ? "Currently unavailable"
+                : "In stock & available"}
             </span>
           </div>
 
@@ -252,31 +368,145 @@ const ProductDetails = () => {
             </ul>
           </div>
 
-          {/* Buttons */}
+          {/* ================= PURCHASE BUTTONS ================= */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
 
             <button
-              onClick={() => addToCart(product._id)}
-              className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-green-200 bg-white py-3.5 font-semibold text-green-700 shadow-sm transition-all duration-300 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
+              disabled={isOutOfStock}
+              onClick={() => {
+                if (!isOutOfStock) {
+                  addToCart(product._id);
+                }
+              }}
+              className={`group flex w-full items-center justify-center gap-2 rounded-xl border py-3.5 font-semibold shadow-sm transition-all duration-300 ${
+                isOutOfStock
+                  ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
+                  : "cursor-pointer border-green-200 bg-white text-green-700 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
+              }`}
             >
-              <FaCartShopping className="transition-transform duration-300 group-hover:scale-110" />
-              Add to Cart
+              {isOutOfStock ? (
+                <>
+                  <FaBan className="text-sm" />
+                  Out of Stock
+                </>
+              ) : (
+                <>
+                  <FaCartShopping className="transition-transform duration-300 group-hover:scale-110" />
+                  Add to Cart
+                </>
+              )}
             </button>
 
             <button
+              disabled={isOutOfStock}
               onClick={() => {
-                addToCart(product._id);
-                navigate("/cart");
-                scrollTo(0, 0);
+                if (!isOutOfStock) {
+                  addToCart(product._id);
+                  navigate("/cart");
+                  scrollTo(0, 0);
+                }
               }}
-              className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-green-600 py-3.5 font-semibold text-white shadow-sm transition-all duration-300 hover:bg-green-700 hover:shadow-md"
+              className={`group flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold shadow-sm transition-all duration-300 ${
+                isOutOfStock
+                  ? "cursor-not-allowed bg-gray-200 text-gray-400"
+                  : "cursor-pointer bg-green-600 text-white hover:bg-green-700 hover:shadow-md"
+              }`}
             >
-              <FaBolt className="text-sm" />
-              Buy Now
-              <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
+              {isOutOfStock ? (
+                <>
+                  <FaBan className="text-sm" />
+                  Currently Unavailable
+                </>
+              ) : (
+                <>
+                  <FaBolt className="text-sm" />
+                  Buy Now
+                  <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
+                </>
+              )}
             </button>
-
           </div>
+
+          {/* ================= AVAILABLE ALTERNATIVES ================= */}
+          {isOutOfStock && alternativeProducts.length > 0 && (
+            <div className="mt-8 rounded-2xl border border-orange-100 bg-orange-50/60 p-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
+                  <FaArrowRight className="text-sm" />
+                </div>
+
+                <div>
+                  <h2 className="text-base font-semibold text-gray-900">
+                    Looking for an alternative?
+                  </h2>
+
+                  <p className="mt-1 text-xs leading-5 text-gray-500">
+                    This product is currently unavailable. Try
+                    these available options instead.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {alternativeProducts.map((alternative) => (
+                  <div
+                    key={alternative._id}
+                    onClick={() => {
+                      navigate(
+                        `/product/${alternative.category.toLowerCase()}/${alternative._id}`
+                      );
+                      scrollTo(0, 0);
+                    }}
+                    className="
+                      group
+                      flex
+                      cursor-pointer
+                      items-center
+                      gap-3
+                      rounded-xl
+                      border
+                      border-white
+                      bg-white
+                      p-3
+                      shadow-sm
+                      transition-all
+                      duration-200
+                      hover:-translate-y-0.5
+                      hover:border-green-200
+                      hover:shadow-md
+                    "
+                  >
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-gray-50 p-1.5">
+                      <img
+                        src={getImageUrl(alternative.image?.[0])}
+                        alt={alternative.name}
+                        className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-gray-800">
+                        {alternative.name}
+                      </p>
+
+                      <p className="mt-0.5 text-xs text-gray-400">
+                        Sold by{" "}
+                        {alternative.sellerId?.storeName ||
+                          alternative.sellerId?.name ||
+                          "Seller"}
+                      </p>
+
+                      <p className="mt-1 text-sm font-bold text-green-600">
+                        ₹{alternative.offerPrice}
+                      </p>
+                    </div>
+
+                    <FaArrowRight className="shrink-0 text-xs text-gray-300 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-green-500" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Bottom Benefits */}
           <div className="mt-5 grid grid-cols-2 gap-2.5">
@@ -284,6 +514,7 @@ const ProductDetails = () => {
               <p className="text-xs font-semibold text-gray-700">
                 Fresh Products
               </p>
+
               <p className="mt-0.5 text-[11px] text-gray-400">
                 Quality guaranteed
               </p>
@@ -293,6 +524,7 @@ const ProductDetails = () => {
               <p className="text-xs font-semibold text-gray-700">
                 Fast Delivery
               </p>
+
               <p className="mt-0.5 text-[11px] text-gray-400">
                 Delivered to your door
               </p>

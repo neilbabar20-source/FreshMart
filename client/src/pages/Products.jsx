@@ -4,14 +4,18 @@ import { AppContext } from "../context/AppContext";
 import ProductCard from "../components/ProductCard";
 
 const Products = () => {
-  const { products, productsLoading, searchQuery } = useContext(AppContext);
+  const { products, productsLoading, searchQuery } =
+    useContext(AppContext);
+
   const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
     if (searchQuery.length > 0) {
       setFilteredProducts(
         products.filter((product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase())
+          product.name
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
         )
       );
     } else {
@@ -41,11 +45,12 @@ const Products = () => {
         </div>
       ) : (
         <div className="my-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 items-center justify-center">
-          {filteredProducts
-            .filter((product) => product.inStock)
-            .map((product, index) => (
-              <ProductCard key={index} product={product} />
-            ))}
+          {filteredProducts.map((product, index) => (
+            <ProductCard
+              key={product._id || index}
+              product={product}
+            />
+          ))}
         </div>
       )}
     </div>

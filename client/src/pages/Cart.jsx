@@ -35,6 +35,9 @@ const Cart = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentOption, setPaymentOption] = useState("COD");
 
+  // Custom quantity state
+  const [customQuantities, setCustomQuantities] = useState({});
+
   // Support both old backend images and new Cloudinary images
   const getImageUrl = (image) => {
     if (!image) return "";
@@ -96,6 +99,86 @@ const Cart = () => {
       getCart();
     }
   }, [products, cartItems]);
+
+  // =========================
+  // HANDLE QUANTITY DROPDOWN
+  // =========================
+  const handleQuantityChange = (product, value) => {
+    const productId = product._id;
+    const stock = Number(product.stock) || 0;
+
+    // Custom quantity selected
+    if (value === "custom") {
+      setCustomQuantities((prev) => ({
+        ...prev,
+        [productId]: cartItems[productId] || "",
+      }));
+
+      return;
+    }
+
+    const quantity = Number(value);
+
+    // Stock validation
+    if (quantity > stock) {
+      toast.error(
+        `Only ${stock} unit${stock === 1 ? "" : "s"} of ${product.name} ${stock === 1 ? "is" : "are"} available.`
+      );
+      return;
+    }
+
+    if (quantity < 1) {
+      return;
+    }
+
+    updateCartItem(productId, quantity);
+
+    setCustomQuantities((prev) => {
+      const updated = { ...prev };
+      delete updated[productId];
+      return updated;
+    });
+  };
+
+  // =========================
+  // HANDLE CUSTOM INPUT
+  // =========================
+  const handleCustomQuantity = (productId, value) => {
+    setCustomQuantities((prev) => ({
+      ...prev,
+      [productId]: value,
+    }));
+  };
+
+  // =========================
+  // APPLY CUSTOM QUANTITY
+  // =========================
+  const applyCustomQuantity = (product) => {
+    const productId = product._id;
+    const stock = Number(product.stock) || 0;
+    const value = Number(customQuantities[productId]);
+
+    if (!value || value < 1) {
+      toast.error("Quantity must be at least 1.");
+      return;
+    }
+
+    // Stock validation
+    if (value > stock) {
+      toast.error(
+        `Only ${stock} unit${stock === 1 ? "" : "s"} of ${product.name} ${stock === 1 ? "is" : "are"} available.`
+      );
+      return;
+    }
+
+    updateCartItem(productId, value);
+
+    setCustomQuantities((prev) => {
+      const updated = { ...prev };
+      delete updated[productId];
+      return updated;
+    });
+  };
 
   const placeOrder = async () => {
     // Guest user → open login popup
@@ -253,279 +336,464 @@ const Cart = () => {
             <div className="px-3 md:px-5">
 
               {cartArray.length > 0 ? (
-                cartArray.map((product, index) => (
-                  <div
-                    key={product._id || index}
-                    className={`py-4 md:py-5 ${
-                      cartArray.length !== index + 1
-                        ? "border-b border-gray-100"
-                        : ""
-                    }`}
-                  >
+                cartArray.map((product, index) => {
+                  const isCustomQuantity =
+                    customQuantities[product._id] !== undefined;
 
-                    {/* Desktop */}
+                  const stock = Number(product.stock) || 0;
+
+                  const currentQuantity =
+                    Number(cartItems[product._id]) || 1;
+
+                  return (
                     <div
-                      className="hidden md:grid
-                        grid-cols-[2fr_1fr_80px]
-                        items-center gap-4"
+                      key={product._id || index}
+                      className={`py-4 md:py-5 ${
+                        cartArray.length !== index + 1
+                          ? "border-b border-gray-100"
+                          : ""
+                      }`}
                     >
 
-                      {/* Product */}
-                      <div className="flex items-center gap-4">
+                      {/* =========================
+                          DESKTOP
+                      ========================== */}
+                      <div
+                        className="hidden md:grid
+                          grid-cols-[2fr_1fr_80px]
+                          items-center gap-4"
+                      >
 
-                        <div
-                          onClick={() => {
-                            navigate(
-                              `/product/${product.category}/${product._id}`
-                            );
-                            scrollTo(0, 0);
-                          }}
-                          className="cursor-pointer w-24 h-24
-                            rounded-2xl bg-gradient-to-br
-                            from-gray-50 to-emerald-50
-                            border border-gray-100
-                            flex items-center justify-center
-                            p-2 hover:border-emerald-200
-                            transition-all duration-200"
-                        >
-                          <img
-                            className="max-w-full h-full object-contain"
-                            src={getImageUrl(product.image?.[0])}
-                            alt={product.name}
-                          />
-                        </div>
+                        {/* Product */}
+                        <div className="flex items-center gap-4">
 
-                        <div className="min-w-0">
-
-                          <p
+                          <div
                             onClick={() => {
                               navigate(
                                 `/product/${product.category}/${product._id}`
                               );
                               scrollTo(0, 0);
                             }}
-                            className="font-semibold text-gray-800
-                              cursor-pointer hover:text-emerald-600
-                              transition-colors"
+                            className="cursor-pointer w-24 h-24
+                              rounded-2xl bg-gradient-to-br
+                              from-gray-50 to-emerald-50
+                              border border-gray-100
+                              flex items-center justify-center
+                              p-2 hover:border-emerald-200
+                              transition-all duration-200"
                           >
-                            {product.name}
-                          </p>
+                            <img
+                              className="max-w-full h-full object-contain"
+                              src={getImageUrl(product.image?.[0])}
+                              alt={product.name}
+                            />
+                          </div>
 
-                          <span
-                            className="inline-block mt-1.5
-                              text-xs font-medium
-                              text-emerald-600 bg-emerald-50
-                              px-2.5 py-1 rounded-full"
-                          >
-                            {product.category}
-                          </span>
+                          <div className="min-w-0">
 
-                          <p className="text-sm text-gray-500 mt-2">
-                            Weight:{" "}
-                            <span className="text-gray-700">
-                              {product.weight || "N/A"}
-                            </span>
-                          </p>
-
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs text-gray-500">
-                              Quantity
-                            </span>
-
-                            <div
-                              className="flex items-center
-                                border border-gray-200
-                                rounded-lg overflow-hidden
-                                bg-gray-50"
+                            <p
+                              onClick={() => {
+                                navigate(
+                                  `/product/${product.category}/${product._id}`
+                                );
+                                scrollTo(0, 0);
+                              }}
+                              className="font-semibold text-gray-800
+                                cursor-pointer hover:text-emerald-600
+                                transition-colors"
                             >
-                              <select
-                                onChange={(e) =>
-                                  updateCartItem(
-                                    product._id,
-                                    Number(e.target.value)
-                                  )
+                              {product.name}
+                            </p>
+
+                            <span
+                              className="inline-block mt-1.5
+                                text-xs font-medium
+                                text-emerald-600 bg-emerald-50
+                                px-2.5 py-1 rounded-full"
+                            >
+                              {product.category}
+                            </span>
+
+                            <p className="text-sm text-gray-500 mt-2">
+                              Weight:{" "}
+                              <span className="text-gray-700">
+                                {product.weight || "N/A"}
+                              </span>
+                            </p>
+
+                            {/* Quantity */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-xs text-gray-500">
+                                Quantity
+                              </span>
+
+                              {!isCustomQuantity ? (
+                                <div
+                                  className="relative flex items-center
+                                    border border-gray-200
+                                    rounded-lg overflow-hidden
+                                    bg-gray-50"
+                                >
+                                  <select
+                                    onChange={(e) =>
+                                      handleQuantityChange(
+                                        product,
+                                        e.target.value
+                                      )
+                                    }
+                                    value={
+                                      currentQuantity <= 9
+                                        ? String(currentQuantity)
+                                        : String(currentQuantity)
+                                    }
+                                    className="appearance-none
+                                      outline-none bg-transparent
+                                      px-2 pr-7 py-1
+                                      text-sm text-gray-700
+                                      cursor-pointer"
+                                  >
+                                    {Array.from(
+                                      {
+                                        length: Math.min(
+                                          9,
+                                          stock
+                                        ),
+                                      },
+                                      (_, index) => index + 1
+                                    ).map((quantity) => (
+                                      <option
+                                        key={quantity}
+                                        value={quantity}
+                                      >
+                                        {quantity}
+                                      </option>
+                                    ))}
+
+                                    {/* Show current custom quantity */}
+                                    {currentQuantity > 9 &&
+                                      currentQuantity <= stock && (
+                                        <option value={currentQuantity}>
+                                          {currentQuantity}
+                                        </option>
+                                      )}
+
+                                    <option value="custom">
+                                      Custom
+                                    </option>
+                                  </select>
+
+                                  <FaChevronDown
+                                    className="absolute right-2
+                                      top-1/2 -translate-y-1/2
+                                      text-[9px] text-gray-400
+                                      pointer-events-none"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1.5">
+
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    max={stock}
+                                    value={
+                                      customQuantities[
+                                        product._id
+                                      ]
+                                    }
+                                    autoFocus
+                                    onChange={(e) =>
+                                      handleCustomQuantity(
+                                        product._id,
+                                        e.target.value
+                                      )
+                                    }
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        applyCustomQuantity(
+                                          product
+                                        );
+                                      }
+                                    }}
+                                    className="w-16 border
+                                      border-emerald-300
+                                      rounded-lg bg-white
+                                      px-2 py-1 text-sm
+                                      text-gray-700 outline-none
+                                      focus:ring-2
+                                      focus:ring-emerald-100"
+                                  />
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      applyCustomQuantity(
+                                        product
+                                      )
+                                    }
+                                    className="px-2.5 py-1
+                                      rounded-lg bg-emerald-500
+                                      text-white text-xs
+                                      font-semibold
+                                      hover:bg-emerald-600
+                                      cursor-pointer"
+                                  >
+                                    ✓
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Stock Information */}
+                            {stock > 0 && (
+                              <p className="text-[10px] text-gray-400 mt-1">
+                                {stock} available
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Price */}
+                        <div className="text-center">
+                          <p className="text-lg font-semibold text-gray-800">
+                            ₹{product.offerPrice * product.quantity}
+                          </p>
+
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            ₹{product.offerPrice} each
+                          </p>
+                        </div>
+
+                        {/* Remove */}
+                        <button
+                          onClick={() =>
+                            removeFromCart(product._id)
+                          }
+                          className="mx-auto w-9 h-9 rounded-full
+                            bg-red-50 text-red-500
+                            flex items-center justify-center
+                            hover:bg-red-100 hover:scale-105
+                            transition-all duration-200 cursor-pointer"
+                          title="Remove item"
+                        >
+                          <FaTrashCan className="text-sm" />
+                        </button>
+                      </div>
+
+                      {/* =========================
+                          MOBILE PRODUCT
+                      ========================== */}
+                      <div className="md:hidden">
+
+                        <div className="flex gap-3">
+
+                          <div
+                            onClick={() => {
+                              navigate(
+                                `/product/${product.category}/${product._id}`
+                              );
+                              scrollTo(0, 0);
+                            }}
+                            className="cursor-pointer w-20 h-20
+                              shrink-0 rounded-xl
+                              bg-gradient-to-br
+                              from-gray-50 to-emerald-50
+                              border border-gray-100
+                              flex items-center justify-center p-1.5"
+                          >
+                            <img
+                              className="max-w-full h-full object-contain"
+                              src={getImageUrl(product.image?.[0])}
+                              alt={product.name}
+                            />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+
+                            <div className="flex items-start justify-between gap-2">
+
+                              <div className="min-w-0">
+                                <p
+                                  onClick={() => {
+                                    navigate(
+                                      `/product/${product.category}/${product._id}`
+                                    );
+                                    scrollTo(0, 0);
+                                  }}
+                                  className="font-semibold text-gray-800
+                                    truncate cursor-pointer"
+                                >
+                                  {product.name}
+                                </p>
+
+                                <span
+                                  className="inline-block mt-1
+                                    text-[10px] font-medium
+                                    text-emerald-600 bg-emerald-50
+                                    px-2 py-0.5 rounded-full"
+                                >
+                                  {product.category}
+                                </span>
+                              </div>
+
+                              <button
+                                onClick={() =>
+                                  removeFromCart(product._id)
                                 }
-                                value={cartItems[product._id]}
-                                className="outline-none bg-transparent
-                                  px-2 py-1 text-sm text-gray-700
+                                className="w-8 h-8 shrink-0 rounded-full
+                                  bg-red-50 text-red-500
+                                  flex items-center justify-center
                                   cursor-pointer"
                               >
-                                {Array(
-                                  cartItems[product._id] > 9
-                                    ? cartItems[product._id]
-                                    : 9
-                                )
-                                  .fill("")
-                                  .map((_, index) => (
-                                    <option
-                                      key={index}
-                                      value={index + 1}
-                                    >
-                                      {index + 1}
-                                    </option>
-                                  ))}
-                              </select>
-
-                              <FaChevronDown
-                                className="text-[9px] text-gray-400
-                                  mr-2 pointer-events-none"
-                              />
+                                <FaTrashCan className="text-xs" />
+                              </button>
                             </div>
-                          </div>
-                        </div>
-                      </div>
 
-                      {/* Price */}
-                      <div className="text-center">
-                        <p className="text-lg font-semibold text-gray-800">
-                          ₹{product.offerPrice * product.quantity}
-                        </p>
-
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          ₹{product.offerPrice} each
-                        </p>
-                      </div>
-
-                      {/* Remove */}
-                      <button
-                        onClick={() =>
-                          removeFromCart(product._id)
-                        }
-                        className="mx-auto w-9 h-9 rounded-full
-                          bg-red-50 text-red-500
-                          flex items-center justify-center
-                          hover:bg-red-100 hover:scale-105
-                          transition-all duration-200 cursor-pointer"
-                        title="Remove item"
-                      >
-                        <FaTrashCan className="text-sm" />
-                      </button>
-                    </div>
-
-                    {/* =========================
-                        MOBILE PRODUCT
-                    ========================== */}
-                    <div className="md:hidden">
-
-                      <div className="flex gap-3">
-
-                        <div
-                          onClick={() => {
-                            navigate(
-                              `/product/${product.category}/${product._id}`
-                            );
-                            scrollTo(0, 0);
-                          }}
-                          className="cursor-pointer w-20 h-20
-                            shrink-0 rounded-xl
-                            bg-gradient-to-br
-                            from-gray-50 to-emerald-50
-                            border border-gray-100
-                            flex items-center justify-center p-1.5"
-                        >
-                          <img
-                            className="max-w-full h-full object-contain"
-                            src={getImageUrl(product.image?.[0])}
-                            alt={product.name}
-                          />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-
-                          <div className="flex items-start justify-between gap-2">
-
-                            <div className="min-w-0">
-                              <p
-                                onClick={() => {
-                                  navigate(
-                                    `/product/${product.category}/${product._id}`
-                                  );
-                                  scrollTo(0, 0);
-                                }}
-                                className="font-semibold text-gray-800
-                                  truncate cursor-pointer"
-                              >
-                                {product.name}
-                              </p>
-
-                              <span
-                                className="inline-block mt-1
-                                  text-[10px] font-medium
-                                  text-emerald-600 bg-emerald-50
-                                  px-2 py-0.5 rounded-full"
-                              >
-                                {product.category}
+                            <p className="text-xs text-gray-500 mt-2">
+                              Weight:{" "}
+                              <span className="text-gray-700">
+                                {product.weight || "N/A"}
                               </span>
-                            </div>
-
-                            <button
-                              onClick={() =>
-                                removeFromCart(product._id)
-                              }
-                              className="w-8 h-8 shrink-0 rounded-full
-                                bg-red-50 text-red-500
-                                flex items-center justify-center
-                                cursor-pointer"
-                            >
-                              <FaTrashCan className="text-xs" />
-                            </button>
-                          </div>
-
-                          <p className="text-xs text-gray-500 mt-2">
-                            Weight:{" "}
-                            <span className="text-gray-700">
-                              {product.weight || "N/A"}
-                            </span>
-                          </p>
-
-                          <div className="flex items-center justify-between mt-2">
-
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-gray-500">
-                                Qty:
-                              </span>
-
-                              <select
-                                onChange={(e) =>
-                                  updateCartItem(
-                                    product._id,
-                                    Number(e.target.value)
-                                  )
-                                }
-                                value={cartItems[product._id]}
-                                className="border border-gray-200
-                                  rounded-md bg-gray-50
-                                  px-2 py-1 text-xs
-                                  outline-none"
-                              >
-                                {Array(
-                                  cartItems[product._id] > 9
-                                    ? cartItems[product._id]
-                                    : 9
-                                )
-                                  .fill("")
-                                  .map((_, index) => (
-                                    <option
-                                      key={index}
-                                      value={index + 1}
-                                    >
-                                      {index + 1}
-                                    </option>
-                                  ))}
-                              </select>
-                            </div>
-
-                            <p className="font-semibold text-gray-800">
-                              ₹
-                              {product.offerPrice *
-                                product.quantity}
                             </p>
+
+                            <div className="flex items-center justify-between mt-2">
+
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">
+                                  Qty:
+                                </span>
+
+                                {!isCustomQuantity ? (
+                                  <div className="relative">
+
+                                    <select
+                                      onChange={(e) =>
+                                        handleQuantityChange(
+                                          product,
+                                          e.target.value
+                                        )
+                                      }
+                                      value={String(
+                                        currentQuantity
+                                      )}
+                                      className="appearance-none
+                                        border border-gray-200
+                                        rounded-md bg-gray-50
+                                        pl-2 pr-7 py-1
+                                        text-xs outline-none
+                                        cursor-pointer"
+                                    >
+                                      {Array.from(
+                                        {
+                                          length: Math.min(
+                                            9,
+                                            stock
+                                          ),
+                                        },
+                                        (_, index) => index + 1
+                                      ).map((quantity) => (
+                                        <option
+                                          key={quantity}
+                                          value={quantity}
+                                        >
+                                          {quantity}
+                                        </option>
+                                      ))}
+
+                                      {/* Show current custom quantity */}
+                                      {currentQuantity > 9 &&
+                                        currentQuantity <= stock && (
+                                          <option
+                                            value={currentQuantity}
+                                          >
+                                            {currentQuantity}
+                                          </option>
+                                        )}
+
+                                      <option value="custom">
+                                        Custom
+                                      </option>
+                                    </select>
+
+                                    <FaChevronDown
+                                      className="absolute right-2
+                                        top-1/2
+                                        -translate-y-1/2
+                                        text-[8px] text-gray-400
+                                        pointer-events-none"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1">
+
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      max={stock}
+                                      value={
+                                        customQuantities[
+                                          product._id
+                                        ]
+                                      }
+                                      autoFocus
+                                      onChange={(e) =>
+                                        handleCustomQuantity(
+                                          product._id,
+                                          e.target.value
+                                        )
+                                      }
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          applyCustomQuantity(
+                                            product
+                                          );
+                                        }
+                                      }}
+                                      className="w-14 border
+                                        border-emerald-300
+                                        rounded-md bg-white
+                                        px-1.5 py-1 text-xs
+                                        outline-none"
+                                    />
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        applyCustomQuantity(
+                                          product
+                                        )
+                                      }
+                                      className="w-6 h-6
+                                        rounded-md
+                                        bg-emerald-500
+                                        text-white text-xs
+                                        font-semibold
+                                        cursor-pointer"
+                                    >
+                                      ✓
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              <p className="font-semibold text-gray-800">
+                                ₹
+                                {product.offerPrice *
+                                  product.quantity}
+                              </p>
+                            </div>
+
+                            {stock > 0 && (
+                              <p className="text-[9px] text-gray-400 mt-1">
+                                {stock} available
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="py-14 text-center">
                   <div

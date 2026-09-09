@@ -431,18 +431,24 @@ export const getRecommendations = async (req, res) => {
       $or: [{ paymentType: "COD" }, { isPaid: true }],
     }).populate("items.product");
 
-    // Get all currently available products
-    const products = await Product.find({
-      inStock: true,
-      stock: { $gt: 0 },
-    }).populate("sellerId", "name storeName");
+    // Get ALL products.
+    // Out-of-stock products will be filtered later so that
+    // only products previously purchased by this user
+    // can appear when they are unavailable.
+    const allProducts = await Product.find({})
+      .populate("sellerId", "name storeName");
 
     // -------------------------------------------------
     // NEW USER / NO ORDER HISTORY
     // -------------------------------------------------
 
     if (!orders.length) {
-      const fallbackProducts = products
+      // New users should only see available products
+      const fallbackProducts = allProducts
+        .filter(
+          (product) =>
+            product.inStock && product.stock > 0
+        )
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 8);
 
@@ -487,6 +493,32 @@ export const getRecommendations = async (req, res) => {
         categoryFrequency[category] += quantity;
       }
     }
+
+    // -------------------------------------------------
+    // FILTER PRODUCTS FOR RECOMMENDATIONS
+    // -------------------------------------------------
+    //
+    // Available products:
+    // -> Can always be recommended
+    //
+    // Out-of-stock products:
+    // -> Can ONLY be recommended if the user
+    //    has previously purchased them.
+    //
+    // This prevents random unavailable products
+    // from appearing in recommendations.
+
+    const products = allProducts.filter((product) => {
+      const productId = product._id.toString();
+
+      const isAvailable =
+        product.inStock && product.stock > 0;
+
+      const wasPurchased =
+        !!purchasedProducts[productId];
+
+      return isAvailable || wasPurchased;
+    });
 
     // -------------------------------------------------
     // USER'S PREFERRED CATEGORIES
