@@ -100,6 +100,115 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
+// Personal Grocery Insights for logged-in user: /api/order/insights
+export const getUserInsights = async (req, res) => {
+  try {
+    const userId = req.user;
+
+    const orders = await Order.find({
+      userId,
+      $or: [{ paymentType: "COD" }, { isPaid: true }],
+    }).populate("items.product");
+
+    let totalSpent = 0;
+    let totalItems = 0;
+
+    const categorySpending = {};
+    const productFrequency = {};
+
+    for (const order of orders) {
+      totalSpent += order.amount;
+
+      for (const item of order.items) {
+        const product = item.product;
+
+        if (!product) continue;
+
+        const quantity = item.quantity || 0;
+        const spending = product.offerPrice * quantity;
+
+        totalItems += quantity;
+
+        // Category-wise spending
+        if (!categorySpending[product.category]) {
+          categorySpending[product.category] = 0;
+        }
+
+        categorySpending[product.category] += spending;
+
+        // Frequently purchased products
+        if (!productFrequency[product._id]) {
+          productFrequency[product._id] = {
+            productId: product._id,
+            name: product.name,
+            category: product.category,
+            quantity: 0,
+          };
+        }
+
+        productFrequency[product._id].quantity += quantity;
+      }
+    }
+
+    const totalOrders = orders.length;
+
+    const averageOrderValue =
+      totalOrders > 0
+        ? Math.round(totalSpent / totalOrders)
+        : 0;
+
+    // Convert category object into array
+    const categorySpendingArray = Object.entries(
+      categorySpending
+    )
+      .map(([category, amount]) => ({
+        category,
+        amount,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    // Convert product object into array
+    const frequentlyPurchasedProducts = Object.values(
+      productFrequency
+    )
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5);
+
+    const mostPurchasedCategory =
+      categorySpendingArray.length > 0
+        ? categorySpendingArray[0].category
+        : null;
+
+    let personalizedInsight =
+      "Start shopping to get personalized grocery insights.";
+
+    if (mostPurchasedCategory) {
+      personalizedInsight = `Your most purchased category is ${mostPurchasedCategory}.`;
+    }
+
+    res.status(200).json({
+      success: true,
+      insights: {
+        totalSpent,
+        totalOrders,
+        averageOrderValue,
+        totalItems,
+        categorySpending: categorySpendingArray,
+        mostPurchasedCategory,
+        frequentlyPurchasedProducts,
+        personalizedInsight,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getUserInsights:", error);
+
+    res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
+  }
+};
+
 // Get all orders for admin
 export const getAllOrders = async (req, res) => {
   try {

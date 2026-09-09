@@ -1,50 +1,51 @@
-import React from 'react'
-import Hero from '../components/Hero'
-import Category from '../components/Category'
-import BestSeller from '../components/BestSeller'
-import BottomBanner from '../components/BottomBanner'
-import Announcement from '../components/Announcement'
-import { Link } from 'react-router-dom'
-import { FaTruckFast } from "react-icons/fa6";
-// import scrollReveal from '../hooks/scrollReveal'
+import React from "react";
+import Hero from "../components/Hero";
+import Category from "../components/Category";
+import BestSeller from "../components/BestSeller";
+import BottomBanner from "../components/BottomBanner";
+import Announcement from "../components/Announcement";
+import { Link } from "react-router-dom";
+import { FaTruckFast, FaArrowRight } from "react-icons/fa6";
 
 const Home = () => {
-
-  // scrollReveal();
-
   return (
-    <div>
+    <main className="w-full overflow-x-hidden pb-8">
 
-      <Announcement />
+      {/* Announcement - Full Width */}
+      <div className="relative left-1/2 w-screen -translate-x-1/2">
+        <Announcement />
+      </div>
 
-      {/* Full Width Hero */}
+      {/* Hero - Full Width */}
       <div className="relative left-1/2 w-screen -translate-x-1/2">
         <Hero />
       </div>
 
-      <section className="py-4 flex justify-center scroll-reveal">
+      {/* Explore All Products */}
+      <section className="flex justify-center px-4 py-5 md:py-6">
         <Link
           to="/products"
-          className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-1.5 text-sm font-medium text-white border-2 border-dotted border-white transition-all duration-300 hover:bg-green-700"
+          className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-green-600 hover:shadow-md"
         >
-          <FaTruckFast
-            style={{ fontSize: "20px" }}
-          />
+          <FaTruckFast className="text-base" />
 
-          Explore All Products Now
+          <span>Explore All Products</span>
 
-          <span>→</span>
+          <FaArrowRight className="text-xs transition-transform duration-300 group-hover:translate-x-1" />
         </Link>
       </section>
 
+      {/* Categories */}
       <Category />
 
+      {/* Best Sellers */}
       <BestSeller />
 
+      {/* Why Choose FreshMart */}
       <BottomBanner />
 
-    </div>
-  )
-}
+    </main>
+  );
+};
 
-export default Home
+export default Home;

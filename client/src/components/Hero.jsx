@@ -1,10 +1,14 @@
-
-import { assets } from '../assets/assets'
-import { Link } from 'react-router-dom'
-import React, { useEffect, useState } from 'react'
+import { assets } from "../assets/assets";
+import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa6";
 
 const Hero = () => {
-
   const slides = [
     {
       desktop: assets.hero1Desktop,
@@ -63,18 +67,15 @@ const Hero = () => {
   };
 
   const handleTouchEnd = () => {
-
     if (!touchStart || !touchEnd) return;
 
     const distance = touchStart - touchEnd;
     const minSwipeDistance = 50;
 
-    // Swipe left
     if (distance > minSwipeDistance) {
       nextSlide();
     }
 
-    // Swipe right
     if (distance < -minSwipeDistance) {
       prevSlide();
     }
@@ -84,129 +85,157 @@ const Hero = () => {
     <div
       className="
         relative
-        overflow-hidden
-        rounded-3xl
-        mx-4 md:mx-8 lg:mx-7
+        mx-3
         mt-4
-        shadow-lg
+        overflow-hidden
+        rounded-2xl
+        md:mx-6
+        lg:mx-7
+        md:rounded-3xl
+        shadow-md
+        hover:shadow-lg
+        transition-shadow
+        duration-500
       "
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-
       {/* ==============================
           Slider Track
       ============================== */}
 
       <div
-        className="flex transition-transform duration-700 ease-in-out"
+        className="
+          flex
+          transition-transform
+          duration-700
+          ease-in-out
+        "
         style={{
           transform: `translateX(-${currentSlide * 100}%)`,
         }}
       >
-
         {slides.map((slide, index) => (
-
           <div
             key={index}
-            className="min-w-full relative overflow-hidden"
+            className="
+              relative
+              min-w-full
+              overflow-hidden
+            "
           >
-
-            {/* ==============================
-                Desktop Image
-            ============================== */}
-
+            {/* Desktop Image */}
             <img
               src={slide.desktop}
-              alt="Freshmart banner"
-              className={`w-full hidden md:block transition-transform duration-[3500ms] ease-out ${
-                index === currentSlide
-                  ? "scale-[1.03]"
-                  : "scale-100"
-              }`}
+              alt="FreshMart banner"
+              className={`
+                hidden
+                w-full
+                md:block
+                transition-transform
+                duration-[3500ms]
+                ease-out
+                ${
+                  index === currentSlide
+                    ? "scale-[1.025]"
+                    : "scale-100"
+                }
+              `}
             />
 
-            {/* ==============================
-                Mobile Image
-            ============================== */}
-
+            {/* Mobile Image */}
             <img
               src={slide.mobile}
-              alt="Freshmart banner"
-              className="w-full md:hidden"
+              alt="FreshMart banner"
+              className="
+                block
+                w-full
+                md:hidden
+              "
             />
-
 
             {/* ==============================
                 Mobile CTA - Slide 1
             ============================== */}
 
             {index === 0 && (
-              <div className="
-                md:hidden
-                absolute
-                bottom-12
-                left-1/2
-                -translate-x-1/2
-              ">
+              <div
+                className="
+                  absolute
+                  bottom-11
+                  left-1/2
+                  -translate-x-1/2
+                  md:hidden
+                "
+              >
                 <Link
                   to="/products"
                   className="
                     inline-flex
                     items-center
                     justify-center
+                    gap-1.5
+                    rounded-full
+                    bg-green-600
                     px-6
                     py-2.5
-                    bg-green-600
-                    text-white
-                    rounded-full
                     text-sm
                     font-semibold
-                    shadow-md
-                    whitespace-nowrap
+                    text-white
+                    shadow-lg
+                    transition-all
+                    duration-200
+                    hover:bg-green-700
+                    active:scale-95
                   "
                 >
-                  Shop Now →
+                  Shop Now
+                  <FaArrowRight className="text-[10px]" />
                 </Link>
               </div>
             )}
-
 
             {/* ==============================
                 Mobile CTA - Slide 2
             ============================== */}
 
             {index === 1 && (
-              <div className="
-                md:hidden
-                absolute
-                bottom-12
-                left-1/2
-                -translate-x-1/2
-              ">
+              <div
+                className="
+                  absolute
+                  bottom-11
+                  left-1/2
+                  -translate-x-1/2
+                  md:hidden
+                "
+              >
                 <Link
                   to="/products"
                   className="
                     inline-flex
                     items-center
                     justify-center
+                    gap-1.5
+                    rounded-full
+                    bg-green-600
                     px-6
                     py-2.5
-                    bg-green-600
-                    text-white
-                    rounded-full
                     text-sm
                     font-semibold
-                    shadow-md
-                    whitespace-nowrap
+                    text-white
+                    shadow-lg
+                    transition-all
+                    duration-200
+                    hover:bg-green-700
+                    active:scale-95
                   "
                 >
-                  Explore Deals Now →
+                  Explore Deals
+                  <FaArrowRight className="text-[10px]" />
                 </Link>
               </div>
             )}
-
 
             {/* ==============================
                 Desktop Slide 1 Content
@@ -214,55 +243,66 @@ const Hero = () => {
 
             {index === 0 && (
               <div
-                key={`slide-1-${currentSlide}`}
-                className={`hidden md:flex absolute inset-0 items-center ${
-                  index === currentSlide
-                    ? "hero-content-active"
-                    : "opacity-0"
-                }`}
+                className={`
+                  absolute
+                  inset-0
+                  hidden
+                  items-center
+                  md:flex
+                  ${
+                    index === currentSlide
+                      ? "hero-content-active"
+                      : "opacity-0"
+                  }
+                `}
               >
-
-                <div className="ml-8 md:ml-14 lg:ml-20 max-w-md">
-
-                  <p className="text-sm md:text-base font-semibold text-green-700 mb-2">
+                <div className="ml-8 max-w-md lg:ml-20 lg:max-w-lg">
+                  <p className="mb-2 text-sm font-semibold tracking-wide text-green-700 lg:text-base">
                     WELCOME TO FRESHMART
                   </p>
 
-                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight">
+                  <h1 className="text-3xl font-bold leading-tight text-gray-800 md:text-4xl lg:text-5xl">
                     Your Everyday
                     <span className="block text-green-600">
                       Online Supermarket
                     </span>
                   </h1>
 
-                  <p className="mt-3 text-sm md:text-base lg:text-lg text-gray-600">
-                    Everything you need, fresh and delivered to your doorstep.
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-gray-600 md:text-base lg:text-lg">
+                    Everything you need, fresh and delivered to your
+                    doorstep.
                   </p>
 
                   <Link
                     to="/products"
                     className="
-                      inline-block
                       mt-5
-                      px-5
+                      inline-flex
+                      items-center
+                      gap-2
+                      rounded-full
+                      bg-green-600
+                      px-6
                       py-2.5
+                      text-sm
+                      font-semibold
+                      text-white
+                      shadow-md
+                      transition-all
+                      duration-200
+                      hover:bg-green-700
+                      hover:shadow-lg
+                      active:scale-95
                       md:px-7
                       md:py-3
-                      bg-green-600
-                      text-white
-                      rounded-full
-                      font-semibold
-                      hover:bg-green-700
-                      transition
                     "
                   >
-                    Shop Now →
+                    Shop Now
+                    <FaArrowRight className="text-xs" />
                   </Link>
-
                 </div>
               </div>
             )}
-
 
             {/* ==============================
                 Desktop Slide 2 Content
@@ -270,60 +310,68 @@ const Hero = () => {
 
             {index === 1 && (
               <div
-                key={`slide-2-${currentSlide}`}
-                className={`hidden md:flex absolute inset-0 items-center ${
-                  index === currentSlide
-                    ? "hero-content-active"
-                    : "opacity-0"
-                }`}
+                className={`
+                  absolute
+                  inset-0
+                  hidden
+                  items-center
+                  md:flex
+                  ${
+                    index === currentSlide
+                      ? "hero-content-active"
+                      : "opacity-0"
+                  }
+                `}
               >
-
-                <div className="ml-8 md:ml-14 lg:ml-20 max-w-md">
-
-                  <p className="text-sm md:text-base font-semibold text-green-700 mb-2">
+                <div className="ml-8 max-w-md lg:ml-20 lg:max-w-lg">
+                  <p className="mb-2 text-sm font-semibold tracking-wide text-green-700 lg:text-base">
                     🔥 SPECIAL OFFER
                   </p>
 
-                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-gray-800 leading-tight">
+                  <h1 className="text-4xl font-extrabold leading-tight text-gray-800 md:text-5xl lg:text-6xl">
                     Up to
                     <span className="block text-green-600">
                       20% OFF
                     </span>
                   </h1>
 
-                  <p className="mt-3 text-sm md:text-base lg:text-lg text-gray-600">
+                  <p className="mt-3 max-w-md text-sm leading-relaxed text-gray-600 md:text-base lg:text-lg">
                     Big savings on your everyday grocery favourites.
                   </p>
 
                   <Link
                     to="/products"
                     className="
-                      inline-block
                       mt-5
-                      px-5
+                      inline-flex
+                      items-center
+                      gap-2
+                      rounded-full
+                      bg-green-600
+                      px-6
                       py-2.5
+                      text-sm
+                      font-semibold
+                      text-white
+                      shadow-md
+                      transition-all
+                      duration-200
+                      hover:bg-green-700
+                      hover:shadow-lg
+                      active:scale-95
                       md:px-7
                       md:py-3
-                      bg-green-600
-                      text-white
-                      rounded-full
-                      font-semibold
-                      hover:bg-green-700
-                      transition
                     "
                   >
-                    Shop Deals →
+                    Shop Deals
+                    <FaArrowRight className="text-xs" />
                   </Link>
-
                 </div>
               </div>
             )}
-
           </div>
         ))}
-
       </div>
-
 
       {/* ==============================
           Desktop Navigation Arrows
@@ -332,76 +380,91 @@ const Hero = () => {
       <button
         onClick={prevSlide}
         className="
-          hidden md:flex
           absolute
-          left-3 md:left-5
+          left-4
           top-1/2
+          hidden
+          h-10
+          w-10
           -translate-y-1/2
-          w-9 h-9 md:w-11 md:h-11
           items-center
           justify-center
           rounded-full
+          border
+          border-white/60
           bg-white/80
-          backdrop-blur-sm
           text-gray-700
           shadow-md
-          hover:bg-white
-          hover:scale-105
+          backdrop-blur-md
           transition-all
           duration-200
+          hover:scale-105
+          hover:bg-white
+          active:scale-95
+          md:flex
+          lg:left-5
+          lg:h-11
+          lg:w-11
           z-10
         "
         aria-label="Previous slide"
       >
-        ←
+        <FaChevronLeft className="text-xs lg:text-sm" />
       </button>
 
       <button
         onClick={nextSlide}
         className="
-          hidden md:flex
           absolute
-          right-3 md:right-5
+          right-4
           top-1/2
+          hidden
+          h-10
+          w-10
           -translate-y-1/2
-          w-9 h-9 md:w-11 md:h-11
           items-center
           justify-center
           rounded-full
+          border
+          border-white/60
           bg-white/80
-          backdrop-blur-sm
           text-gray-700
           shadow-md
-          hover:bg-white
-          hover:scale-105
+          backdrop-blur-md
           transition-all
           duration-200
+          hover:scale-105
+          hover:bg-white
+          active:scale-95
+          md:flex
+          lg:right-5
+          lg:h-11
+          lg:w-11
           z-10
         "
         aria-label="Next slide"
       >
-        →
+        <FaChevronRight className="text-xs lg:text-sm" />
       </button>
-
 
       {/* ==============================
           Mobile Dots
       ============================== */}
 
-      <div className="
-        absolute
-        bottom-3
-        left-1/2
-        -translate-x-1/2
-        flex
-        items-center
-        gap-2
-        z-10
-        md:hidden
-      ">
-
+      <div
+        className="
+          absolute
+          bottom-3
+          left-1/2
+          z-10
+          flex
+          -translate-x-1/2
+          items-center
+          gap-1.5
+          md:hidden
+        "
+      >
         {slides.map((_, index) => (
-
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
@@ -414,50 +477,49 @@ const Hero = () => {
               ${
                 currentSlide === index
                   ? "w-6 bg-green-600"
-                  : "w-1.5 bg-white"
+                  : "w-1.5 bg-white/90"
               }
             `}
           />
-
         ))}
-
       </div>
-
 
       {/* ==============================
           Desktop Indicator
       ============================== */}
 
-      <div className="
-        hidden md:flex
-        absolute
-        bottom-2
-        left-1/2
-        -translate-x-1/2
-        items-center
-        gap-2
-        z-10
-      ">
-
-        <span className="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
-
-        <div className="
+      <div
+        className="
+          absolute
+          bottom-3
+          left-1/2
+          hidden
+          -translate-x-1/2
+          items-center
+          gap-2
+          rounded-full
+          border
+          border-white/40
+          bg-black/25
           px-3
           py-1
-          rounded-full
-          bg-gray-700
-          text-white
           text-xs
           font-semibold
+          text-white
           shadow-sm
-        ">
-          {currentSlide + 1}/{slides.length}
-        </div>
+          backdrop-blur-md
+          md:flex
+          z-10
+        "
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-white/70"></span>
 
-        <span className="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
+        <span>
+          {currentSlide + 1} / {slides.length}
+        </span>
 
+        <span className="h-1.5 w-1.5 rounded-full bg-white/70"></span>
       </div>
-
     </div>
   );
 };

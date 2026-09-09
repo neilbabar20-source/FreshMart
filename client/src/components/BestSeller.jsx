@@ -1,33 +1,41 @@
 import React, { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import ProductCard from "./ProductCard";
+import { FaArrowRight } from "react-icons/fa6";
 
 const BestSeller = () => {
   const { products } = useContext(AppContext);
 
   return (
-    <div className="mt-16 rounded-2xl border border-green-100 bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-7 md:px-7">
+    <section className="mt-14 md:mt-16">
 
-      {/* Section Heading */}
-      <p className="text-2xl md:text-3xl font-semibold text-gray-800">
-        Best Sellers
-      </p>
+      {/* Section Header */}
+      <div className="flex items-end justify-between px-1">
+        <div>
+          <p className="text-2xl md:text-3xl font-bold text-gray-800">
+            Best Sellers
+          </p>
 
-      {/* Heading Accent */}
-      <div className="mt-2 h-1 w-16 rounded-full bg-green-500"></div>
+          <div className="mt-2 h-1 w-14 rounded-full bg-green-500"></div>
+        </div>
+
+        {/* Desktop Hint */}
+        <p className="hidden sm:block text-xs md:text-sm text-gray-400">
+          Customer favourites
+        </p>
+      </div>
 
       {/* Products */}
       <div
         className="
-          my-6
+          mt-6
           flex
           gap-3
-          sm:gap-5
+          sm:gap-4
           overflow-x-auto
           scroll-smooth
           category-scrollbar
-          pb-2
-          scroll-stagger
+          pb-3
         "
       >
         {products
@@ -36,7 +44,11 @@ const BestSeller = () => {
           .map((product, index) => (
             <div
               key={index}
-              className="shrink-0 w-[calc(50%-6px)] sm:w-auto"
+              className="
+                shrink-0
+                w-[calc(50%-6px)]
+                sm:w-auto
+              "
             >
               <ProductCard product={product} />
             </div>
@@ -44,11 +56,15 @@ const BestSeller = () => {
       </div>
 
       {/* Mobile Swipe Hint */}
-      <p className="sm:hidden text-center text-xs text-gray-400 -mt-1">
-        ← Swipe for more →
-      </p>
+      <div className="mt-1 flex items-center justify-center gap-2 sm:hidden">
+        <span className="text-[11px] text-gray-400">
+          Swipe to explore
+        </span>
 
-    </div>
+        <FaArrowRight className="text-[9px] text-gray-400" />
+      </div>
+
+    </section>
   );
 };
 

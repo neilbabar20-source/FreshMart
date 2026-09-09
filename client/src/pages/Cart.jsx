@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
+import {
+  FaCartShopping,
+  FaArrowLeft,
+  FaTrashCan,
+  FaLocationDot,
+  FaCreditCard,
+  FaTruckFast,
+  FaPlus,
+  FaChevronDown,
+  FaBoxOpen,
+} from "react-icons/fa6";
 
 const Cart = () => {
   const {
@@ -168,288 +179,665 @@ const Cart = () => {
     }
   };
 
+  const subtotal = totalCartAmount();
+  const tax = (subtotal * 2) / 100;
+  const totalAmount = subtotal + tax;
+
   return products.length > 0 && cartItems ? (
-    <div className="flex flex-col md:flex-row py-16 max-w-6xl w-full px-6 mx-auto">
+    <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 md:py-12 pb-16">
 
-      <div className="flex-1 max-w-4xl">
+      {/* =========================
+          PAGE HEADER
+      ========================== */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
 
-        <h1 className="text-3xl font-medium mb-6">
-          Shopping Cart{" "}
-          <span className="text-sm text-indigo-500">
-            {cartCount()} Items
-          </span>
-        </h1>
+        <div className="flex items-center gap-3">
+          <div
+            className="w-11 h-11 rounded-2xl
+              bg-gradient-to-br from-emerald-500 to-green-600
+              text-white flex items-center justify-center
+              shadow-sm"
+          >
+            <FaCartShopping />
+          </div>
 
-        <div className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 text-base font-medium pb-3">
-          <p className="text-left">Product Details</p>
-          <p className="text-center">Subtotal</p>
-          <p className="text-center">Action</p>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold text-gray-800">
+              Shopping Cart
+            </h1>
+
+            <p className="text-sm text-gray-500 mt-0.5">
+              Review your fresh groceries before checkout.
+            </p>
+          </div>
         </div>
 
-        {cartArray.map((product, index) => (
+        <div
+          className="w-fit bg-emerald-50 border border-emerald-100
+            text-emerald-700 px-3.5 py-1.5 rounded-full
+            text-sm font-semibold"
+        >
+          {cartCount()} {cartCount() === 1 ? "Item" : "Items"}
+        </div>
+      </div>
+
+      {/* =========================
+          MAIN CONTENT
+      ========================== */}
+      <div className="flex flex-col lg:flex-row gap-7">
+
+        {/* =========================
+            CART ITEMS
+        ========================== */}
+        <div className="flex-1">
+
           <div
-            key={product._id || index}
-            className="grid grid-cols-[2fr_1fr_1fr] text-gray-500 items-center text-sm md:text-base font-medium pt-3"
+            className="bg-white border border-gray-100
+              rounded-2xl shadow-sm overflow-hidden"
           >
 
-            <div className="flex items-center md:gap-6 gap-3">
-
-              <div
-                onClick={() => {
-                  navigate(
-                    `/product/${product.category}/${product._id}`
-                  );
-                  scrollTo(0, 0);
-                }}
-                className="cursor-pointer w-24 h-24 flex items-center justify-center border border-gray-300 rounded"
-              >
-                <img
-                  className="max-w-full h-full object-cover"
-                  src={getImageUrl(product.image?.[0])}
-                  alt={product.name}
-                />
-              </div>
-
-              <div>
-
-                <p className="hidden md:block font-semibold">
-                  {product.name}
-                </p>
-
-                <div className="font-normal text-gray-500/70">
-
-                  <p>
-                    Weight:{" "}
-                    <span>
-                      {product.weight || "N/A"}
-                    </span>
-                  </p>
-
-                  <div className="flex items-center">
-
-                    <p>Qty:</p>
-
-                    <select
-                      onChange={(e) =>
-                        updateCartItem(
-                          product._id,
-                          Number(e.target.value)
-                        )
-                      }
-                      value={cartItems[product._id]}
-                      className="outline-none"
-                    >
-                      {Array(
-                        cartItems[product._id] > 9
-                          ? cartItems[product._id]
-                          : 9
-                      )
-                        .fill("")
-                        .map((_, index) => (
-                          <option
-                            key={index}
-                            value={index + 1}
-                          >
-                            {index + 1}
-                          </option>
-                        ))}
-                    </select>
-
-                  </div>
-
-                </div>
-
-              </div>
-
+            {/* Table Header */}
+            <div
+              className="hidden md:grid
+                grid-cols-[2fr_1fr_80px]
+                bg-gray-50 border-b border-gray-100
+                px-5 py-3 text-xs font-semibold
+                text-gray-500 uppercase tracking-wide"
+            >
+              <p>Product Details</p>
+              <p className="text-center">Subtotal</p>
+              <p className="text-center">Action</p>
             </div>
 
-            <p className="text-center">
-              ₹{product.offerPrice * product.quantity}
-            </p>
+            {/* Products */}
+            <div className="px-3 md:px-5">
 
-            <button
-              onClick={() => removeFromCart(product._id)}
-              className="cursor-pointer mx-auto"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m12.5 7.5-5 5m0-5 5 5m5.833-2.5a8.333 8.333 0 1 1-16.667 0 8.333 8.333 0 0 1 16.667 0"
-                  stroke="#FF532E"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-
-          </div>
-        ))}
-
-        {/* Continue Shopping */}
-
-        <button
-          onClick={() => {
-            setSearchQuery("");
-            navigate("/products");
-          }}
-          className="group cursor-pointer flex items-center mt-8 gap-2 text-indigo-500 font-medium"
-        >
-          <svg
-            width="15"
-            height="11"
-            viewBox="0 0 15 11"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M14.09 5.5H1M6.143 10 1 5.5 6.143 1"
-              stroke="#615fff"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-
-          Continue Shopping
-        </button>
-
-      </div>
-
-      {/* Order Summary */}
-
-      <div className="max-w-[360px] w-full bg-gray-100/40 p-5 max-md:mt-16 border border-gray-300/70">
-
-        <h2 className="text-xl md:text-xl font-medium">
-          Order Summary
-        </h2>
-
-        <hr className="border-gray-300 my-5" />
-
-        <div className="mb-6">
-
-          <p className="text-sm font-medium uppercase">
-            Delivery Address
-          </p>
-
-          <div className="relative flex justify-between items-start mt-2">
-
-            <p className="text-gray-500">
-              {selectedAddress
-                ? `${selectedAddress.street},${selectedAddress.city},${selectedAddress.state},${selectedAddress.country}`
-                : "No Address Found"}
-            </p>
-
-            <button
-              onClick={() => setShowAddress(!showAddress)}
-              className="text-indigo-500 hover:underline cursor-pointer"
-            >
-              Change
-            </button>
-
-            {showAddress && (
-              <div className="absolute top-12 py-1 bg-white border border-gray-300 text-sm w-full">
-
-                {address.map((address, index) => (
-                  <p
-                    key={index}
-                    onClick={() => {
-                      setSelectedAddress(address);
-                      setShowAddress(false);
-                    }}
-                    className="text-gray-500 p-2 hover:bg-gray-100"
+              {cartArray.length > 0 ? (
+                cartArray.map((product, index) => (
+                  <div
+                    key={product._id || index}
+                    className={`py-4 md:py-5 ${
+                      cartArray.length !== index + 1
+                        ? "border-b border-gray-100"
+                        : ""
+                    }`}
                   >
-                    {address.street}, {address.city},{" "}
-                    {address.state}, {address.country},
-                  </p>
-                ))}
 
-                <p
-                  onClick={() => navigate("/add-address")}
-                  className="text-indigo-500 text-center cursor-pointer p-2 hover:bg-indigo-500/10"
+                    {/* Desktop */}
+                    <div
+                      className="hidden md:grid
+                        grid-cols-[2fr_1fr_80px]
+                        items-center gap-4"
+                    >
+
+                      {/* Product */}
+                      <div className="flex items-center gap-4">
+
+                        <div
+                          onClick={() => {
+                            navigate(
+                              `/product/${product.category}/${product._id}`
+                            );
+                            scrollTo(0, 0);
+                          }}
+                          className="cursor-pointer w-24 h-24
+                            rounded-2xl bg-gradient-to-br
+                            from-gray-50 to-emerald-50
+                            border border-gray-100
+                            flex items-center justify-center
+                            p-2 hover:border-emerald-200
+                            transition-all duration-200"
+                        >
+                          <img
+                            className="max-w-full h-full object-contain"
+                            src={getImageUrl(product.image?.[0])}
+                            alt={product.name}
+                          />
+                        </div>
+
+                        <div className="min-w-0">
+
+                          <p
+                            onClick={() => {
+                              navigate(
+                                `/product/${product.category}/${product._id}`
+                              );
+                              scrollTo(0, 0);
+                            }}
+                            className="font-semibold text-gray-800
+                              cursor-pointer hover:text-emerald-600
+                              transition-colors"
+                          >
+                            {product.name}
+                          </p>
+
+                          <span
+                            className="inline-block mt-1.5
+                              text-xs font-medium
+                              text-emerald-600 bg-emerald-50
+                              px-2.5 py-1 rounded-full"
+                          >
+                            {product.category}
+                          </span>
+
+                          <p className="text-sm text-gray-500 mt-2">
+                            Weight:{" "}
+                            <span className="text-gray-700">
+                              {product.weight || "N/A"}
+                            </span>
+                          </p>
+
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-gray-500">
+                              Quantity
+                            </span>
+
+                            <div
+                              className="flex items-center
+                                border border-gray-200
+                                rounded-lg overflow-hidden
+                                bg-gray-50"
+                            >
+                              <select
+                                onChange={(e) =>
+                                  updateCartItem(
+                                    product._id,
+                                    Number(e.target.value)
+                                  )
+                                }
+                                value={cartItems[product._id]}
+                                className="outline-none bg-transparent
+                                  px-2 py-1 text-sm text-gray-700
+                                  cursor-pointer"
+                              >
+                                {Array(
+                                  cartItems[product._id] > 9
+                                    ? cartItems[product._id]
+                                    : 9
+                                )
+                                  .fill("")
+                                  .map((_, index) => (
+                                    <option
+                                      key={index}
+                                      value={index + 1}
+                                    >
+                                      {index + 1}
+                                    </option>
+                                  ))}
+                              </select>
+
+                              <FaChevronDown
+                                className="text-[9px] text-gray-400
+                                  mr-2 pointer-events-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-gray-800">
+                          ₹{product.offerPrice * product.quantity}
+                        </p>
+
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          ₹{product.offerPrice} each
+                        </p>
+                      </div>
+
+                      {/* Remove */}
+                      <button
+                        onClick={() =>
+                          removeFromCart(product._id)
+                        }
+                        className="mx-auto w-9 h-9 rounded-full
+                          bg-red-50 text-red-500
+                          flex items-center justify-center
+                          hover:bg-red-100 hover:scale-105
+                          transition-all duration-200 cursor-pointer"
+                        title="Remove item"
+                      >
+                        <FaTrashCan className="text-sm" />
+                      </button>
+                    </div>
+
+                    {/* =========================
+                        MOBILE PRODUCT
+                    ========================== */}
+                    <div className="md:hidden">
+
+                      <div className="flex gap-3">
+
+                        <div
+                          onClick={() => {
+                            navigate(
+                              `/product/${product.category}/${product._id}`
+                            );
+                            scrollTo(0, 0);
+                          }}
+                          className="cursor-pointer w-20 h-20
+                            shrink-0 rounded-xl
+                            bg-gradient-to-br
+                            from-gray-50 to-emerald-50
+                            border border-gray-100
+                            flex items-center justify-center p-1.5"
+                        >
+                          <img
+                            className="max-w-full h-full object-contain"
+                            src={getImageUrl(product.image?.[0])}
+                            alt={product.name}
+                          />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+
+                          <div className="flex items-start justify-between gap-2">
+
+                            <div className="min-w-0">
+                              <p
+                                onClick={() => {
+                                  navigate(
+                                    `/product/${product.category}/${product._id}`
+                                  );
+                                  scrollTo(0, 0);
+                                }}
+                                className="font-semibold text-gray-800
+                                  truncate cursor-pointer"
+                              >
+                                {product.name}
+                              </p>
+
+                              <span
+                                className="inline-block mt-1
+                                  text-[10px] font-medium
+                                  text-emerald-600 bg-emerald-50
+                                  px-2 py-0.5 rounded-full"
+                              >
+                                {product.category}
+                              </span>
+                            </div>
+
+                            <button
+                              onClick={() =>
+                                removeFromCart(product._id)
+                              }
+                              className="w-8 h-8 shrink-0 rounded-full
+                                bg-red-50 text-red-500
+                                flex items-center justify-center
+                                cursor-pointer"
+                            >
+                              <FaTrashCan className="text-xs" />
+                            </button>
+                          </div>
+
+                          <p className="text-xs text-gray-500 mt-2">
+                            Weight:{" "}
+                            <span className="text-gray-700">
+                              {product.weight || "N/A"}
+                            </span>
+                          </p>
+
+                          <div className="flex items-center justify-between mt-2">
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-gray-500">
+                                Qty:
+                              </span>
+
+                              <select
+                                onChange={(e) =>
+                                  updateCartItem(
+                                    product._id,
+                                    Number(e.target.value)
+                                  )
+                                }
+                                value={cartItems[product._id]}
+                                className="border border-gray-200
+                                  rounded-md bg-gray-50
+                                  px-2 py-1 text-xs
+                                  outline-none"
+                              >
+                                {Array(
+                                  cartItems[product._id] > 9
+                                    ? cartItems[product._id]
+                                    : 9
+                                )
+                                  .fill("")
+                                  .map((_, index) => (
+                                    <option
+                                      key={index}
+                                      value={index + 1}
+                                    >
+                                      {index + 1}
+                                    </option>
+                                  ))}
+                              </select>
+                            </div>
+
+                            <p className="font-semibold text-gray-800">
+                              ₹
+                              {product.offerPrice *
+                                product.quantity}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-14 text-center">
+                  <div
+                    className="w-14 h-14 mx-auto rounded-full
+                      bg-gray-50 text-gray-400
+                      flex items-center justify-center text-xl"
+                  >
+                    <FaBoxOpen />
+                  </div>
+
+                  <p className="text-gray-600 font-medium mt-3">
+                    Your cart is empty
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Continue Shopping */}
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              navigate("/products");
+            }}
+            className="group cursor-pointer flex items-center
+              gap-2 mt-5 text-emerald-600
+              font-medium text-sm hover:text-emerald-700
+              transition-colors"
+          >
+            <FaArrowLeft
+              className="text-xs transition-transform
+                duration-200 group-hover:-translate-x-1"
+            />
+
+            Continue Shopping
+          </button>
+        </div>
+
+        {/* =========================
+            ORDER SUMMARY
+        ========================== */}
+        <div className="lg:w-[350px] w-full">
+
+          <div
+            className="bg-white border border-gray-100
+              rounded-2xl shadow-sm overflow-hidden
+              lg:sticky lg:top-24"
+          >
+
+            {/* Summary Header */}
+            <div
+              className="px-5 py-4
+                bg-gradient-to-r from-emerald-50
+                to-green-50 border-b border-emerald-100"
+            >
+              <div className="flex items-center gap-2.5">
+
+                <div
+                  className="w-9 h-9 rounded-xl
+                    bg-white text-emerald-600
+                    flex items-center justify-center
+                    shadow-sm"
                 >
-                  Add address
+                  <FaCartShopping className="text-sm" />
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-800">
+                    Order Summary
+                  </h2>
+
+                  <p className="text-xs text-gray-500">
+                    Complete your order
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5">
+
+              {/* =========================
+                  DELIVERY ADDRESS
+              ========================== */}
+              <div>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <FaLocationDot className="text-emerald-600 text-sm" />
+
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Delivery Address
+                  </p>
+                </div>
+
+                <div className="relative">
+
+                  <div
+                    className="flex items-start justify-between
+                      gap-3 p-3 rounded-xl
+                      bg-gray-50 border border-gray-100"
+                  >
+                    <p className="text-sm text-gray-600 leading-5">
+                      {selectedAddress
+                        ? `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.country}`
+                        : "No Address Found"}
+                    </p>
+
+                    <button
+                      onClick={() =>
+                        setShowAddress(!showAddress)
+                      }
+                      className="text-xs font-semibold
+                        text-indigo-500 hover:text-indigo-600
+                        cursor-pointer shrink-0"
+                    >
+                      Change
+                    </button>
+                  </div>
+
+                  {/* Address Dropdown */}
+                  {showAddress && (
+                    <div
+                      className="absolute top-full left-0
+                        mt-2 py-1 bg-white
+                        border border-gray-200
+                        shadow-xl rounded-xl
+                        text-sm w-full z-30 overflow-hidden"
+                    >
+                      {address.map((address, index) => (
+                        <p
+                          key={index}
+                          onClick={() => {
+                            setSelectedAddress(address);
+                            setShowAddress(false);
+                          }}
+                          className="text-gray-600 px-3 py-2.5
+                            hover:bg-emerald-50
+                            hover:text-emerald-700
+                            cursor-pointer transition-colors"
+                        >
+                          {address.street}, {address.city},{" "}
+                          {address.state}, {address.country}
+                        </p>
+                      ))}
+
+                      <p
+                        onClick={() =>
+                          navigate("/add-address")
+                        }
+                        className="flex items-center
+                          justify-center gap-2
+                          text-indigo-500 font-medium
+                          cursor-pointer px-3 py-2.5
+                          border-t border-gray-100
+                          hover:bg-indigo-50"
+                      >
+                        <FaPlus className="text-[10px]" />
+                        Add address
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* =========================
+                  PAYMENT METHOD
+              ========================== */}
+              <div className="mt-5">
+
+                <div className="flex items-center gap-2 mb-2.5">
+                  <FaCreditCard className="text-indigo-500 text-sm" />
+
+                  <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                    Payment Method
+                  </p>
+                </div>
+
+                <div className="relative">
+                  <select
+                    onChange={(e) =>
+                      setPaymentOption(e.target.value)
+                    }
+                    value={paymentOption}
+                    className="w-full appearance-none
+                      border border-gray-200
+                      bg-gray-50 px-3.5 py-2.5
+                      pr-9 rounded-xl outline-none
+                      text-sm text-gray-700
+                      focus:border-emerald-400
+                      focus:ring-4 focus:ring-emerald-50
+                      cursor-pointer transition-all"
+                  >
+                    <option value="COD">
+                      Cash On Delivery
+                    </option>
+
+                    <option value="Online">
+                      Online Payment
+                    </option>
+                  </select>
+
+                  <FaChevronDown
+                    className="absolute right-3 top-1/2
+                      -translate-y-1/2
+                      text-gray-400 text-xs
+                      pointer-events-none"
+                  />
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-100 my-5" />
+
+              {/* =========================
+                  PRICE DETAILS
+              ========================== */}
+              <div className="space-y-3">
+
+                <p className="flex justify-between text-sm text-gray-500">
+                  <span>Price</span>
+                  <span className="font-medium text-gray-700">
+                    ₹{subtotal}
+                  </span>
                 </p>
 
+                <p className="flex justify-between text-sm text-gray-500">
+                  <span>Shipping Fee</span>
+
+                  <span className="text-green-600 font-medium">
+                    Free
+                  </span>
+                </p>
+
+                <p className="flex justify-between text-sm text-gray-500">
+                  <span>Tax (2%)</span>
+
+                  <span className="font-medium text-gray-700">
+                    ₹{tax}
+                  </span>
+                </p>
+
+                <div
+                  className="border-t border-dashed
+                    border-gray-200 pt-3 mt-2"
+                />
+
+                <p className="flex justify-between items-center">
+                  <span className="text-base font-semibold text-gray-700">
+                    Total Amount
+                  </span>
+
+                  <span className="text-xl font-bold text-emerald-600">
+                    ₹{totalAmount}
+                  </span>
+                </p>
               </div>
-            )}
 
+              {/* =========================
+                  DELIVERY INFO
+              ========================== */}
+              <div
+                className="flex items-center gap-2.5
+                  bg-emerald-50 border border-emerald-100
+                  rounded-xl p-3 mt-5"
+              >
+                <div
+                  className="w-8 h-8 rounded-lg bg-white
+                    flex items-center justify-center
+                    text-emerald-600 shadow-sm"
+                >
+                  <FaTruckFast className="text-sm" />
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-gray-700">
+                    Free Delivery
+                  </p>
+
+                  <p className="text-[10px] text-gray-500">
+                    Fresh groceries delivered to your door
+                  </p>
+                </div>
+              </div>
+
+              {/* =========================
+                  CHECKOUT BUTTON
+              ========================== */}
+              <button
+                type="button"
+                onClick={placeOrder}
+                className="w-full py-3.5 mt-5
+                  cursor-pointer
+                  bg-gradient-to-r from-emerald-500
+                  to-green-600
+                  hover:from-emerald-600
+                  hover:to-green-700
+                  text-white font-semibold
+                  rounded-xl shadow-md
+                  hover:shadow-lg
+                  hover:-translate-y-0.5
+                  transition-all duration-200"
+              >
+                {paymentOption === "COD"
+                  ? "Place Order"
+                  : "Proceed to Checkout"}
+              </button>
+
+              <p className="text-center text-[10px] text-gray-400 mt-2.5">
+                Secure checkout • FreshMart
+              </p>
+            </div>
           </div>
-
-          <p className="text-sm font-medium uppercase mt-6">
-            Payment Method
-          </p>
-
-          <select
-            onChange={(e) =>
-              setPaymentOption(e.target.value)
-            }
-            value={paymentOption}
-            className="w-full border border-gray-300 bg-white px-3 py-2 mt-2 outline-none"
-          >
-            <option value="COD">
-              Cash On Delivery
-            </option>
-
-            <option value="Online">
-              Online Payment
-            </option>
-          </select>
-
         </div>
-
-        <hr className="border-gray-300" />
-
-        <div className="text-gray-500 mt-4 space-y-2">
-
-          <p className="flex justify-between">
-            <span>Price</span>
-            <span>₹{totalCartAmount()}</span>
-          </p>
-
-          <p className="flex justify-between">
-            <span>Shipping Fee</span>
-            <span className="text-green-600">
-              Free
-            </span>
-          </p>
-
-          <p className="flex justify-between">
-            <span>Tax (2%)</span>
-            <span>
-              ₹{(totalCartAmount() * 2) / 100}
-            </span>
-          </p>
-
-          <p className="flex justify-between text-lg font-medium mt-3">
-            <span>Total Amount:</span>
-
-            <span>
-              ₹
-              {totalCartAmount() +
-                (totalCartAmount() * 2) / 100}
-            </span>
-          </p>
-
-        </div>
-
-        <button
-          type="button"
-          onClick={placeOrder}
-          className="w-full py-3 mt-6 cursor-pointer bg-indigo-500 text-white font-medium hover:bg-indigo-600 transition"
-        >
-          {paymentOption === "COD"
-            ? "Place Order"
-            : "Proceed to Checkout"}
-        </button>
-
       </div>
-
     </div>
   ) : null;
 };

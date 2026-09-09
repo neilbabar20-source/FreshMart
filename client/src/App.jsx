@@ -12,6 +12,7 @@ import ProductCategory from "./pages/ProductCategory";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import AddAddress from "./pages/AddAddress";
+import PersonalInsights from "./pages/PersonalInsights";
 
 // =========================
 // SELLER IMPORTS
@@ -106,6 +107,12 @@ const App = () => {
           <Route
             path="/my-orders"
             element={<MyOrders />}
+          />
+
+          {/* Personal Grocery Insights */}
+          <Route
+            path="/insights"
+            element={<PersonalInsights />}
           />
 
           {/* Add Address */}

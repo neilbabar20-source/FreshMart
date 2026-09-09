@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
+import { FaCartShopping, FaMinus, FaPlus } from "react-icons/fa6";
 
 const ProductCard = ({ product }) => {
   const context = useContext(AppContext);
@@ -10,7 +11,6 @@ const ProductCard = ({ product }) => {
     addToCart,
     removeFromCart,
     cartItems,
-    setSearchQuery,
   } = context;
 
   return (
@@ -19,8 +19,6 @@ const ProductCard = ({ product }) => {
         onClick={() => {
           sessionStorage.setItem("productClick", "true");
 
-          setSearchQuery(product.name);
-
           navigate(
             `/product/${product.category.toLowerCase()}/${product._id}`
           );
@@ -28,239 +26,236 @@ const ProductCard = ({ product }) => {
           scrollTo(0, 0);
         }}
         className="
-          border border-gray-200
-          rounded-xl
-          px-2
-          py-2
-          md:px-4
-          md:py-3
-          bg-white
+          group
+          relative
           w-full
           min-w-0
           md:min-w-56
           md:max-w-56
+          overflow-hidden
+          rounded-2xl
+          border
+          border-gray-100
+          bg-white
           shadow-sm
-          hover:shadow-md
           transition-all
           duration-300
+          hover:-translate-y-1
+          hover:shadow-lg
+          hover:border-green-100
+          cursor-pointer
         "
       >
-        {/* Product Image */}
+        {/* Product Image Area */}
         <div
           className="
-            group
-            cursor-pointer
+            relative
             flex
+            h-32
+            md:h-40
             items-center
             justify-center
-            h-28
-            md:h-36
-            px-1
-            md:px-2
-            py-1
-            md:py-2
             overflow-hidden
+            bg-gradient-to-br
+            from-gray-50
+            to-green-50/40
+            px-3
+            py-3
           "
         >
+          {/* Discount Badge */}
+          {product.price > product.offerPrice && (
+            <span
+              className="
+                absolute
+                left-2
+                top-2
+                z-10
+                rounded-full
+                bg-green-600
+                px-2
+                py-1
+                text-[9px]
+                md:text-[10px]
+                font-semibold
+                text-white
+                shadow-sm
+              "
+            >
+              {Math.round(
+                ((product.price - product.offerPrice) / product.price) * 100
+              )}
+              % OFF
+            </span>
+          )}
+
           <img
-            className="
-              w-[85%]
-              h-[85%]
-              object-contain
-              transition-transform
-              duration-300
-              group-hover:scale-105
-            "
             src={
               product.image?.[0]?.startsWith("http")
                 ? product.image[0]
                 : `${import.meta.env.VITE_BACKEND_URL}/images/${product.image?.[0]}`
             }
             alt={product.name}
+            className="
+              h-[88%]
+              w-[88%]
+              object-contain
+              transition-transform
+              duration-500
+              group-hover:scale-110
+            "
           />
         </div>
 
         {/* Product Information */}
-        <div className="text-gray-500/70 text-sm min-w-0">
+        <div className="px-3 pb-3 pt-3 md:px-4 md:pb-4">
 
           {/* Category */}
-          <p className="text-[10px] md:text-xs text-gray-500">
+          <p className="text-[10px] md:text-xs font-medium uppercase tracking-wide text-gray-400">
             {product.category}
           </p>
 
           {/* Product Name */}
           <p
             className="
-              text-gray-700
-              font-medium
-              text-sm
-              md:text-lg
-              truncate
-              w-full
               mt-1
+              truncate
+              text-sm
+              md:text-base
+              font-semibold
+              text-gray-800
             "
           >
             {product.name}
           </p>
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mt-1">
-            {Array(5)
-              .fill("")
-              .map((_, i) => (
-                <img
-                  key={i}
-                  src={
-                    i < 4
-                      ? assets.star_icon
-                      : assets.star_dull_icon
-                  }
-                  alt="rating"
-                  className="w-2.5 md:w-3.5"
-                />
-              ))}
+          <div className="mt-1.5 flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
+              {Array(5)
+                .fill("")
+                .map((_, i) => (
+                  <img
+                    key={i}
+                    src={
+                      i < 4
+                        ? assets.star_icon
+                        : assets.star_dull_icon
+                    }
+                    alt="rating"
+                    className="h-2.5 w-2.5 md:h-3 md:w-3"
+                  />
+                ))}
+            </div>
 
-            <p className="text-[10px] md:text-xs text-gray-500 ml-1">
+            <span className="text-[10px] md:text-xs text-gray-400">
               (4)
-            </p>
+            </span>
           </div>
 
           {/* Price + Cart */}
-          <div
-            className="
-              flex
-              items-center
-              justify-between
-              gap-1
-              mt-3
-              md:mt-4
-              min-w-0
-            "
-          >
+          <div className="mt-3 flex items-center justify-between gap-2">
 
             {/* Price */}
-            <p
-              className="
-                min-w-0
-                whitespace-nowrap
-                text-sm
-                md:text-xl
-                font-semibold
-                text-indigo-500
-              "
-            >
-              ₹{product.offerPrice}
+            <div className="min-w-0">
+              <p className="whitespace-nowrap text-sm md:text-lg font-bold text-green-600">
+                ₹{product.offerPrice}
 
-              <span
-                className="
-                  ml-1
-                  text-gray-400
-                  text-[10px]
-                  md:text-sm
-                  line-through
-                  font-normal
-                "
-              >
-                ₹{product.price}
-              </span>
-            </p>
+                <span className="ml-1 text-[9px] md:text-xs font-normal text-gray-400 line-through">
+                  ₹{product.price}
+                </span>
+              </p>
+            </div>
 
-            {/* Cart Button */}
+            {/* Cart Controls */}
             <div
-              className="text-indigo-500 flex-shrink-0"
+              className="flex-shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               {!cartItems?.[product._id] ? (
                 <button
+                  onClick={() => addToCart(product._id)}
                   className="
                     flex
+                    h-8
+                    w-[58px]
+                    md:h-9
+                    md:w-[78px]
                     items-center
                     justify-center
-                    gap-1
-                    bg-indigo-50
+                    gap-1.5
+                    rounded-lg
                     border
-                    border-indigo-200
-                    w-[54px]
-                    md:w-[80px]
-                    h-[32px]
-                    md:h-[34px]
-                    rounded-md
-                    text-indigo-600
-                    text-xs
-                    md:text-base
-                    font-medium
+                    border-green-200
+                    bg-green-50
+                    text-[10px]
+                    md:text-sm
+                    font-semibold
+                    text-green-700
                     transition-all
                     duration-200
-                    hover:bg-indigo-100
+                    hover:border-green-300
+                    hover:bg-green-100
+                    active:scale-95
                   "
-                  onClick={() => addToCart(product._id)}
                 >
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 0 1-1.167 0"
-                      stroke="#615fff"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-
+                  <FaCartShopping className="text-[11px] md:text-sm" />
                   Add
                 </button>
               ) : (
                 <div
                   className="
                     flex
+                    h-8
+                    w-[68px]
+                    md:h-9
+                    md:w-[82px]
                     items-center
-                    justify-center
-                    gap-1
-                    md:gap-2
-                    w-[54px]
-                    md:w-20
-                    h-[32px]
-                    md:h-[34px]
-                    bg-indigo-100
-                    rounded-md
-                    select-none
+                    justify-between
+                    rounded-lg
+                    bg-green-50
+                    border
+                    border-green-200
+                    px-1
+                    text-green-700
                   "
                 >
                   <button
                     onClick={() => removeFromCart(product._id)}
                     className="
-                      cursor-pointer
-                      text-sm
-                      md:text-md
-                      px-1
-                      md:px-2
-                      h-full
-                      hover:text-indigo-700
+                      flex
+                      h-6
+                      w-6
+                      items-center
+                      justify-center
+                      rounded-md
+                      transition
+                      hover:bg-green-100
+                      active:scale-90
                     "
                   >
-                    -
+                    <FaMinus className="text-[9px] md:text-[10px]" />
                   </button>
 
-                  <span className="w-4 md:w-5 text-center text-xs md:text-base">
+                  <span className="w-4 text-center text-xs md:text-sm font-semibold">
                     {cartItems[product._id]}
                   </span>
 
                   <button
                     onClick={() => addToCart(product._id)}
                     className="
-                      cursor-pointer
-                      text-sm
-                      md:text-md
-                      px-1
-                      md:px-2
-                      h-full
-                      hover:text-indigo-700
+                      flex
+                      h-6
+                      w-6
+                      items-center
+                      justify-center
+                      rounded-md
+                      transition
+                      hover:bg-green-100
+                      active:scale-90
                     "
                   >
-                    +
+                    <FaPlus className="text-[9px] md:text-[10px]" />
                   </button>
                 </div>
               )}

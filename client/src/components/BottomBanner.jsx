@@ -1,309 +1,153 @@
-import React from 'react'
-import { assets } from '../assets/assets'
+import React from "react";
+import { assets } from "../assets/assets";
+import {
+  FaLeaf,
+  FaTruckFast,
+  FaShieldHeart,
+  FaArrowRight,
+} from "react-icons/fa6";
 
 const BottomBanner = () => {
+  const benefits = [
+    {
+      icon: <FaLeaf />,
+      title: "Fresh & Quality",
+      text: "Handpicked products",
+    },
+    {
+      icon: <FaTruckFast />,
+      title: "Fast Delivery",
+      text: "Quick doorstep delivery",
+    },
+    {
+      icon: <FaShieldHeart />,
+      title: "Trusted Shopping",
+      text: "Safe & reliable service",
+    },
+    {
+      icon: <FaArrowRight />,
+      title: "Easy Shopping",
+      text: "Simple & convenient",
+    },
+  ];
+
   return (
-    <div className="relative mt-20 overflow-hidden rounded-2xl shadow-sm transition-all duration-500 hover:shadow-md">
+    <section className="mt-16 md:mt-20">
+      <div className="relative overflow-hidden rounded-3xl border border-green-100 shadow-md">
 
-      {/* ==============================
-          Desktop Banner
-      ============================== */}
+        {/* ================= DESKTOP ================= */}
+        <div className="relative hidden md:block">
+          <img
+            src={assets.bottom_banner_image}
+            alt="Why Choose FreshMart"
+            className="h-auto w-full object-cover"
+          />
 
-      <div className="hidden md:block relative">
+          <div className="absolute inset-0 bg-black/[0.02]" />
 
-        <img
-          src={assets.bottom_banner_image}
-          alt="FreshMart offers"
-          className="w-full transition-transform duration-500 hover:scale-[1.01]"
-        />
+          {/* Right Content */}
+          <div className="absolute right-[4%] top-1/2 w-[47%] -translate-y-1/2">
+            <div className="rounded-3xl bg-white/95 px-6 py-6 shadow-xl backdrop-blur-md lg:px-7 lg:py-6">
 
-        {/* Why Choose FreshMart - Desktop */}
-        <div className="
-          absolute
-          right-[6%]
-          top-1/2
-          -translate-y-1/2
-          w-[48%]
-          max-w-xl
-          px-6
-          lg:px-10
-        ">
+              {/* Heading */}
+              <div className="mb-5">
+                <span className="text-xs font-semibold uppercase tracking-wider text-green-600">
+                  Why Choose FreshMart
+                </span>
 
-          <p className="text-sm lg:text-base font-semibold text-green-600 mb-2">
-            🥬 WHY FRESHMART?
-          </p>
+                <h2 className="mt-1.5 text-2xl font-semibold leading-tight text-gray-900 lg:text-3xl">
+                  Freshness you can
+                  <span className="block text-green-600">
+                    trust every day.
+                  </span>
+                </h2>
 
-          <h2 className="
-            text-2xl
-            lg:text-4xl
-            font-bold
-            text-gray-800
-            leading-tight
-          ">
-            Why Choose FreshMart?
-          </h2>
-
-          <p className="
-            mt-2
-            text-sm
-            lg:text-base
-            text-gray-600
-            max-w-lg
-          ">
-            Fresh groceries, better prices and a shopping experience
-            made just for you. ❤️
-          </p>
-
-
-          {/* Benefits */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-5 mt-6">
-
-            {/* Fast Delivery */}
-            <div className="group">
-              <div className="
-                flex items-center gap-2
-                text-green-700
-                font-semibold
-                text-sm lg:text-base
-              ">
-                <span className="text-xl">🚚</span>
-                Lightning-Fast Delivery
+                <p className="mt-2 max-w-xl text-xs leading-5 text-gray-500 lg:text-sm">
+                  Quality groceries, reliable delivery and a smooth shopping
+                  experience — all in one place.
+                </p>
               </div>
 
-              <p className="mt-1 text-xs lg:text-sm text-gray-500 leading-relaxed">
-                Get your daily essentials fresh and on time.
-              </p>
-            </div>
+              {/* Benefits */}
+              <div className="grid grid-cols-2 gap-3">
+                {benefits.map((benefit, index) => (
+                  <div
+                    key={index}
+                    className="group rounded-2xl border border-gray-100 bg-white p-3.5 transition-all duration-300 hover:-translate-y-1 hover:border-green-200 hover:shadow-md"
+                  >
+                    <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-green-50 text-sm text-green-600 transition-transform duration-300 group-hover:scale-110">
+                      {benefit.icon}
+                    </div>
 
+                    <h3 className="text-sm font-semibold text-gray-800">
+                      {benefit.title}
+                    </h3>
 
-            {/* Fresh Products */}
-            <div className="group">
-              <div className="
-                flex items-center gap-2
-                text-green-700
-                font-semibold
-                text-sm lg:text-base
-              ">
-                <span className="text-xl">🥦</span>
-                Fresh & Quality
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {benefit.text}
+                    </p>
+                  </div>
+                ))}
               </div>
-
-              <p className="mt-1 text-xs lg:text-sm text-gray-500 leading-relaxed">
-                Carefully selected products for your family.
-              </p>
             </div>
-
-
-            {/* Best Prices */}
-            <div className="group">
-              <div className="
-                flex items-center gap-2
-                text-green-700
-                font-semibold
-                text-sm lg:text-base
-              ">
-                <span className="text-xl">💰</span>
-                Everyday Great Prices
-              </div>
-
-              <p className="mt-1 text-xs lg:text-sm text-gray-500 leading-relaxed">
-                Save more on your everyday grocery shopping.
-              </p>
-            </div>
-
-
-            {/* Easy Shopping */}
-            <div className="group">
-              <div className="
-                flex items-center gap-2
-                text-green-700
-                font-semibold
-                text-sm lg:text-base
-              ">
-                <span className="text-xl">🛒</span>
-                Easy Shopping
-              </div>
-
-              <p className="mt-1 text-xs lg:text-sm text-gray-500 leading-relaxed">
-                Browse, add to cart and order with ease.
-              </p>
-            </div>
-
           </div>
+        </div>
 
+        {/* ================= MOBILE ================= */}
+        <div className="relative md:hidden">
+          <img
+            src={assets.bottom_banner_image_sm}
+            alt="Why Choose FreshMart"
+            className="h-auto w-full object-cover"
+          />
+
+          <div className="absolute inset-0 bg-black/[0.02]" />
+
+          <div className="absolute inset-x-4 top-5">
+            <div className="rounded-3xl bg-white/95 p-5 text-center shadow-lg backdrop-blur-md">
+
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-green-600">
+                Why Choose FreshMart
+              </span>
+
+              <h2 className="mt-1.5 text-xl font-semibold leading-tight text-gray-900">
+                Freshness you can
+                <span className="block text-green-600">
+                  trust every day.
+                </span>
+              </h2>
+
+              <p className="mx-auto mt-2 max-w-xs text-[11px] leading-4.5 text-gray-500">
+                Quality groceries and reliable delivery at your doorstep.
+              </p>
+
+              <div className="mt-4 grid grid-cols-2 gap-2.5 text-left">
+                {benefits.map((benefit, index) => (
+                  <div
+                    key={index}
+                    className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm"
+                  >
+                    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-green-50 text-sm text-green-600">
+                      {benefit.icon}
+                    </div>
+
+                    <h3 className="text-xs font-semibold text-gray-800">
+                      {benefit.title}
+                    </h3>
+
+                    <p className="mt-0.5 text-[10px] leading-4 text-gray-500">
+                      {benefit.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
+    </section>
+  );
+};
 
-
-      {/* ==============================
-          Mobile Banner
-      ============================== */}
-
-      <div className="block md:hidden relative">
-
-        <img
-          src={assets.bottom_banner_image_sm}
-          alt="FreshMart offers"
-          className="w-full transition-transform duration-500 hover:scale-[1.01]"
-        />
-
-        {/* Why Choose FreshMart - Mobile */}
-        <div className="
-          absolute
-          top-7
-          left-5
-          right-5
-          text-center
-        ">
-
-          <p className="
-            text-xs
-            font-semibold
-            text-green-600
-            mb-1
-          ">
-            🥬 WHY FRESHMART?
-          </p>
-
-          <h2 className="
-            text-2xl
-            font-bold
-            text-gray-800
-            leading-tight
-          ">
-            Why Choose FreshMart?
-          </h2>
-
-          <p className="
-            mt-1.5
-            text-xs
-            text-gray-600
-            leading-relaxed
-          ">
-            Fresh groceries. Better prices. Faster delivery. ❤️
-          </p>
-
-
-          {/* Mobile Benefits */}
-          <div className="
-            grid
-            grid-cols-2
-            gap-3
-            mt-4
-          ">
-
-            {/* Fast Delivery */}
-            <div className="
-              rounded-xl
-              bg-white/80
-              backdrop-blur-sm
-              border
-              border-green-100
-              px-2
-              py-2.5
-              shadow-sm
-            ">
-              <div className="text-lg">
-                🚚
-              </div>
-
-              <p className="
-                mt-0.5
-                text-xs
-                font-semibold
-                text-gray-800
-              ">
-                Fast Delivery
-              </p>
-            </div>
-
-
-            {/* Fresh Products */}
-            <div className="
-              rounded-xl
-              bg-white/80
-              backdrop-blur-sm
-              border
-              border-green-100
-              px-2
-              py-2.5
-              shadow-sm
-            ">
-              <div className="text-lg">
-                🥦
-              </div>
-
-              <p className="
-                mt-0.5
-                text-xs
-                font-semibold
-                text-gray-800
-              ">
-                Fresh Products
-              </p>
-            </div>
-
-
-            {/* Best Prices */}
-            <div className="
-              rounded-xl
-              bg-white/80
-              backdrop-blur-sm
-              border
-              border-green-100
-              px-2
-              py-2.5
-              shadow-sm
-            ">
-              <div className="text-lg">
-                💰
-              </div>
-
-              <p className="
-                mt-0.5
-                text-xs
-                font-semibold
-                text-gray-800
-              ">
-                Best Prices
-              </p>
-            </div>
-
-
-            {/* Easy Shopping */}
-            <div className="
-              rounded-xl
-              bg-white/80
-              backdrop-blur-sm
-              border
-              border-green-100
-              px-2
-              py-2.5
-              shadow-sm
-            ">
-              <div className="text-lg">
-                🛒
-              </div>
-
-              <p className="
-                mt-0.5
-                text-xs
-                font-semibold
-                text-gray-800
-              ">
-                Easy Shopping
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  )
-}
-
-export default BottomBanner
+export default BottomBanner;
