@@ -431,10 +431,7 @@ export const getRecommendations = async (req, res) => {
       $or: [{ paymentType: "COD" }, { isPaid: true }],
     }).populate("items.product");
 
-    // Get ALL products.
-    // Out-of-stock products will be filtered later so that
-    // only products previously purchased by this user
-    // can appear when they are unavailable.
+    // Get ALL products
     const allProducts = await Product.find({})
       .populate("sellerId", "name storeName");
 
@@ -443,18 +440,9 @@ export const getRecommendations = async (req, res) => {
     // -------------------------------------------------
 
     if (!orders.length) {
-      // New users should only see available products
-      const fallbackProducts = allProducts
-        .filter(
-          (product) =>
-            product.inStock && product.stock > 0
-        )
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, 8);
-
       return res.status(200).json({
         success: true,
-        recommendations: fallbackProducts,
+        recommendations: [],
       });
     }
 
