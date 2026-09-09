@@ -4,7 +4,13 @@ import toast from "react-hot-toast";
 
 const MyOrders = () => {
   const [myOrders, setMyOrders] = useState([]);
-  const { axios, user } = useContext(AppContext);
+
+  const {
+    axios,
+    user,
+    cartItems,
+    setCartItems,
+  } = useContext(AppContext);
 
   // Support both old backend images and new Cloudinary images
   const getImageUrl = (image) => {
@@ -27,6 +33,38 @@ const MyOrders = () => {
     } catch (error) {
       toast.error(error.message);
     }
+  };
+
+  // Buy Again / Reorder
+  const handleBuyAgain = (order) => {
+    const newCartItems = structuredClone(cartItems);
+    let addedItems = 0;
+
+    order.items?.forEach((item) => {
+      // Skip products that were deleted
+      if (!item.product) return;
+
+      const productId = item.product._id;
+      const quantity = item.quantity || 1;
+
+      // Add old order quantity to existing cart quantity
+      if (newCartItems[productId]) {
+        newCartItems[productId] += quantity;
+      } else {
+        newCartItems[productId] = quantity;
+      }
+
+      addedItems += quantity;
+    });
+
+    if (addedItems === 0) {
+      return toast.error("No available products to reorder");
+    }
+
+    setCartItems(newCartItems);
+
+    toast.success("Items added to cart");
+    // Navigate to cart after reorder
   };
 
   useEffect(() => {
@@ -142,6 +180,16 @@ const MyOrders = () => {
               </div>
             );
           })}
+
+          {/* Buy Again */}
+          <div className="border-t border-gray-200 mt-4 pt-4 flex justify-end">
+            <button
+              onClick={() => handleBuyAgain(order)}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-lg cursor-pointer"
+            >
+              Buy Again
+            </button>
+          </div>
         </div>
       ))}
     </div>
