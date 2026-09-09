@@ -1,10 +1,33 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import ProductCard from "./ProductCard";
 import { FaArrowRight } from "react-icons/fa6";
 
 const BestSeller = () => {
-  const { products } = useContext(AppContext);
+  const { axios } = useContext(AppContext);
+
+  const [bestSellers, setBestSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBestSellers = async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await axios.get("/api/product/best-sellers");
+
+      if (data.success) {
+        setBestSellers(data.bestSellers || []);
+      }
+    } catch (error) {
+      console.error("Error fetching best sellers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBestSellers();
+  }, []);
 
   return (
     <section className="mt-14 md:mt-16">
@@ -38,12 +61,26 @@ const BestSeller = () => {
           pb-3
         "
       >
-        {products
-          .filter((product) => product.inStock)
-          .slice(0, 5)
-          .map((product, index) => (
+        {loading ? (
+          <>
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div
+                key={item}
+                className="
+                  shrink-0
+                  w-[calc(50%-6px)]
+                  sm:w-auto
+                  animate-pulse
+                "
+              >
+                <div className="h-[280px] w-full min-w-[170px] rounded-xl bg-gray-100"></div>
+              </div>
+            ))}
+          </>
+        ) : (
+          bestSellers.slice(0, 5).map((product) => (
             <div
-              key={index}
+              key={product._id}
               className="
                 shrink-0
                 w-[calc(50%-6px)]
@@ -52,17 +89,20 @@ const BestSeller = () => {
             >
               <ProductCard product={product} />
             </div>
-          ))}
+          ))
+        )}
       </div>
 
       {/* Mobile Swipe Hint */}
-      <div className="mt-1 flex items-center justify-center gap-2 sm:hidden">
-        <span className="text-[11px] text-gray-400">
-          Swipe to explore
-        </span>
+      {!loading && bestSellers.length > 0 && (
+        <div className="mt-1 flex items-center justify-center gap-2 sm:hidden">
+          <span className="text-[11px] text-gray-400">
+            Swipe to explore
+          </span>
 
-        <FaArrowRight className="text-[9px] text-gray-400" />
-      </div>
+          <FaArrowRight className="text-[9px] text-gray-400" />
+        </div>
+      )}
 
     </section>
   );

@@ -2,6 +2,8 @@ import express from "express";
 
 import { authSeller } from "../middlewares/authSeller.js";
 
+import authUser from "../middlewares/authUsers.js";
+
 import { upload } from "../config/multer.js";
 
 import {
@@ -12,11 +14,16 @@ import {
   changeStock,
   updateProduct,
   deleteProduct,
+  getRecommendations,
+  getBestSellers,
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
 
-// Seller: add product
+// =====================================================
+// SELLER: ADD PRODUCT
+// =====================================================
+
 router.post(
   "/add-product",
   authSeller,
@@ -24,19 +31,62 @@ router.post(
   addProduct
 );
 
-// Customer/Admin: get all products
+// =====================================================
+// CUSTOMER / ADMIN: GET ALL PRODUCTS
+// =====================================================
+
 router.get("/list", getProducts);
 
-// Seller: get only own products
-router.get("/seller", authSeller, getSellerProducts);
+// =====================================================
+// CUSTOMER: PERSONALIZED RECOMMENDATIONS
+// =====================================================
 
-// Get single product
+router.get(
+  "/recommendations",
+  authUser,
+  getRecommendations
+);
+
+// =====================================================
+// CUSTOMER: GLOBAL BEST SELLERS
+// All users combined purchase history
+// =====================================================
+
+router.get(
+  "/best-sellers",
+  getBestSellers
+);
+
+// =====================================================
+// SELLER: GET OWN PRODUCTS
+// =====================================================
+
+router.get(
+  "/seller",
+  authSeller,
+  getSellerProducts
+);
+
+// =====================================================
+// GET SINGLE PRODUCT
+// =====================================================
+
 router.get("/id", getProductById);
 
-// Seller: change own product stock
-router.post("/stock", authSeller, changeStock);
+// =====================================================
+// SELLER: CHANGE STOCK
+// =====================================================
 
-// Seller: update own product
+router.post(
+  "/stock",
+  authSeller,
+  changeStock
+);
+
+// =====================================================
+// SELLER: UPDATE OWN PRODUCT
+// =====================================================
+
 router.post(
   "/update",
   authSeller,
@@ -44,7 +94,10 @@ router.post(
   updateProduct
 );
 
-// Seller: delete own product
+// =====================================================
+// SELLER: DELETE OWN PRODUCT
+// =====================================================
+
 router.post(
   "/delete",
   authSeller,

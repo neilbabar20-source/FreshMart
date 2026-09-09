@@ -1,4 +1,5 @@
 import Product from "../models/product.model.js";
+import Order from "../models/order.model.js";
 import { v2 as cloudinary } from "cloudinary";
 
 // =====================================================
@@ -45,10 +46,7 @@ export const addProduct = async (req, res) => {
 
     const stockQuantity = Number(stock);
 
-    if (
-      !Number.isInteger(stockQuantity) ||
-      stockQuantity < 0
-    ) {
+    if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
       return res.status(400).json({
         success: false,
         message: "Stock must be a valid number greater than or equal to 0",
@@ -103,7 +101,6 @@ export const addProduct = async (req, res) => {
   }
 };
 
-
 // =====================================================
 // GET ALL PRODUCTS
 // /api/product/list
@@ -127,7 +124,6 @@ export const getProducts = async (req, res) => {
     });
   }
 };
-
 
 // =====================================================
 // GET SELLER PRODUCTS
@@ -163,7 +159,6 @@ export const getSellerProducts = async (req, res) => {
     });
   }
 };
-
 
 // =====================================================
 // GET SINGLE PRODUCT
@@ -205,7 +200,6 @@ export const getProductById = async (req, res) => {
   }
 };
 
-
 // =====================================================
 // CHANGE STOCK
 // /api/product/stock
@@ -233,10 +227,7 @@ export const changeStock = async (req, res) => {
 
     const stockQuantity = Number(stock);
 
-    if (
-      !Number.isInteger(stockQuantity) ||
-      stockQuantity < 0
-    ) {
+    if (!Number.isInteger(stockQuantity) || stockQuantity < 0) {
       return res.status(400).json({
         success: false,
         message: "Stock must be a valid number greater than or equal to 0",
@@ -278,7 +269,6 @@ export const changeStock = async (req, res) => {
     });
   }
 };
-
 
 // =====================================================
 // EDIT PRODUCT
@@ -374,7 +364,6 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-
 // =====================================================
 // DELETE PRODUCT
 // /api/product/delete
@@ -422,6 +411,233 @@ export const deleteProduct = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error while deleting product",
+    });
+  }
+};
+
+// =====================================================
+// GET PERSONALIZED PRODUCT RECOMMENDATIONS
+// /api/product/recommendations
+// Customer: logged-in user's personalized recommendations
+// =====================================================
+
+export const getRecommendations = async (req, res) => {
+  try {
+    const userId = req.user;
+
+    // Get user's valid order history
+    const orders = await Order.find({
+      userId,
+      $or: [{ paymentType: "COD" }, { isPaid: true }],
+    }).populate("items.product");
+
+    // Get all currently available products
+    const products = await Product.find({
+      inStock: true,
+      stock: { $gt: 0 },
+    }).populate("sellerId", "name storeName");
+
+    // -------------------------------------------------
+    // NEW USER / NO ORDER HISTORY
+    // -------------------------------------------------
+
+    if (!orders.length) {
+      const fallbackProducts = products
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, 8);
+
+      return res.status(200).json({
+        success: true,
+        recommendations: fallbackProducts,
+      });
+    }
+
+    // -------------------------------------------------
+    // TRACK USER PURCHASE HISTORY
+    // -------------------------------------------------
+
+    const purchasedProducts = {};
+    const categoryFrequency = {};
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        const product = item.product;
+
+        if (!product) continue;
+
+        const productId = product._id.toString();
+        const category = product.category;
+        const quantity = item.quantity || 0;
+
+        // Product purchase frequency
+        if (!purchasedProducts[productId]) {
+          purchasedProducts[productId] = {
+            quantity: 0,
+            category,
+          };
+        }
+
+        purchasedProducts[productId].quantity += quantity;
+
+        // Category preference
+        if (!categoryFrequency[category]) {
+          categoryFrequency[category] = 0;
+        }
+
+        categoryFrequency[category] += quantity;
+      }
+    }
+
+    // -------------------------------------------------
+    // USER'S PREFERRED CATEGORIES
+    // -------------------------------------------------
+
+    const preferredCategories = Object.entries(categoryFrequency)
+      .sort((a, b) => b[1] - a[1])
+      .map(([category]) => category);
+
+    // -------------------------------------------------
+    // CALCULATE RECOMMENDATION SCORE
+    // -------------------------------------------------
+
+    const scoredProducts = products.map((product) => {
+      const productId = product._id.toString();
+
+      let score = 0;
+
+      // 1. Purchase history
+      if (purchasedProducts[productId]) {
+        score += purchasedProducts[productId].quantity * 10;
+      }
+
+      // 2. Preferred category
+      const categoryIndex = preferredCategories.indexOf(
+        product.category
+      );
+
+      if (categoryIndex !== -1) {
+        score +=
+          (preferredCategories.length - categoryIndex) * 5;
+      }
+
+      // 3. User has purchased from this category
+      if (categoryFrequency[product.category]) {
+        score += 5;
+      }
+
+      // 4. Slight preference for newer products
+      const daysSinceCreated =
+        (Date.now() - new Date(product.createdAt).getTime()) /
+        (1000 * 60 * 60 * 24);
+
+      if (daysSinceCreated <= 30) {
+        score += 2;
+      }
+
+      return {
+        product,
+        score,
+      };
+    });
+
+    // -------------------------------------------------
+    // SORT BY RECOMMENDATION SCORE
+    // -------------------------------------------------
+
+    scoredProducts.sort((a, b) => b.score - a.score);
+
+    // -------------------------------------------------
+    // RETURN TOP 8 PRODUCTS
+    // -------------------------------------------------
+
+    const recommendations = scoredProducts
+      .slice(0, 8)
+      .map((item) => item.product);
+
+    res.status(200).json({
+      success: true,
+      recommendations,
+    });
+  } catch (error) {
+    console.error("Error in getRecommendations:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while generating recommendations",
+    });
+  }
+};
+
+// =====================================================
+// GET BEST SELLING PRODUCTS
+// /api/product/best-sellers
+// All users: globally most purchased products
+// =====================================================
+
+export const getBestSellers = async (req, res) => {
+  try {
+    // Get all valid orders from all users
+    const orders = await Order.find({
+      $or: [{ paymentType: "COD" }, { isPaid: true }],
+    }).populate("items.product");
+
+    // Track total quantity sold for every product
+    const productSales = {};
+
+    for (const order of orders) {
+      for (const item of order.items) {
+        const product = item.product;
+
+        // Skip deleted products
+        if (!product) continue;
+
+        const productId = product._id.toString();
+        const quantity = item.quantity || 0;
+
+        if (!productSales[productId]) {
+          productSales[productId] = 0;
+        }
+
+        productSales[productId] += quantity;
+      }
+    }
+
+    // Get currently available products
+    const products = await Product.find({
+      inStock: true,
+      stock: { $gt: 0 },
+    }).populate("sellerId", "name storeName");
+
+    // Add total sold quantity to every available product
+    const scoredProducts = products.map((product) => {
+      const productId = product._id.toString();
+
+      return {
+        product,
+        soldQuantity: productSales[productId] || 0,
+      };
+    });
+
+    // Highest selling products first
+    scoredProducts.sort(
+      (a, b) => b.soldQuantity - a.soldQuantity
+    );
+
+    // Return top 5 best sellers
+    const bestSellers = scoredProducts
+      .slice(0, 5)
+      .map((item) => item.product);
+
+    res.status(200).json({
+      success: true,
+      bestSellers,
+    });
+  } catch (error) {
+    console.error("Error in getBestSellers:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while generating best sellers",
     });
   }
 };
