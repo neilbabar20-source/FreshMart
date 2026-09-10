@@ -2,18 +2,21 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-import { connectDB } from "./config/connectDB.js";
 
 dotenv.config();
 
-import userRoutes from "./routes/user.routes.js";
-import sellerRoutes from "./routes/seller.routes.js";
-import adminRoutes from "./routes/admin.route.js";
-import { connectCloudinary } from "./config/cloudinary.js";
-import productRoutes from "./routes/product.routes.js";
-import cartRoutes from "./routes/cart.routes.js";
-import orderRoutes from "./routes/order.routes.js";
-import addressRoutes from "./routes/address.route.js";
+// Load backend modules only after environment variables are loaded
+const { connectDB } = await import("./config/connectDB.js");
+
+const { default: userRoutes } = await import("./routes/user.routes.js");
+const { default: sellerRoutes } = await import("./routes/seller.routes.js");
+const { default: adminRoutes } = await import("./routes/admin.route.js");
+const { connectCloudinary } = await import("./config/cloudinary.js");
+const { default: productRoutes } = await import("./routes/product.routes.js");
+const { default: cartRoutes } = await import("./routes/cart.routes.js");
+const { default: orderRoutes } = await import("./routes/order.routes.js");
+const { default: addressRoutes } = await import("./routes/address.route.js");
+const { default: paymentRoutes } = await import("./routes/payment.route.js");
 
 const app = express();
 
@@ -40,6 +43,7 @@ app.use("/api/product", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/address", addressRoutes);
+app.use("/api/payment", paymentRoutes);
 
 const PORT = process.env.PORT || 4000;
 

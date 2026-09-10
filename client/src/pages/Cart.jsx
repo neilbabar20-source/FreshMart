@@ -21,7 +21,6 @@ const Cart = () => {
     totalCartAmount,
     cartItems,
     setCartItems,
-    removeFromCart,
     updateCartItem,
     axios,
     user,
@@ -36,10 +35,12 @@ const Cart = () => {
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentOption, setPaymentOption] = useState("COD");
 
-  // Custom quantity state
   const [customQuantities, setCustomQuantities] = useState({});
 
-  // Support both old backend images and new Cloudinary images
+  // =========================
+  // SUPPORT OLD + CLOUDINARY IMAGES
+  // =========================
+
   const getImageUrl = (image) => {
     if (!image) return "";
 
@@ -47,6 +48,10 @@ const Cart = () => {
       ? image
       : `${import.meta.env.VITE_BACKEND_URL}/images/${image}`;
   };
+
+  // =========================
+  // GET CART
+  // =========================
 
   const getCart = () => {
     let tempArray = [];
@@ -56,7 +61,7 @@ const Cart = () => {
         (product) => product._id === key
       );
 
-      // Product may have been deleted from database
+      // Product may have been deleted
       if (!product) {
         continue;
       }
@@ -69,6 +74,10 @@ const Cart = () => {
 
     setCartArray(tempArray);
   };
+
+  // =========================
+  // GET ADDRESS
+  // =========================
 
   const getAddress = async () => {
     try {
@@ -104,11 +113,11 @@ const Cart = () => {
   // =========================
   // HANDLE QUANTITY DROPDOWN
   // =========================
+
   const handleQuantityChange = (product, value) => {
     const productId = product._id;
     const stock = Number(product.stock) || 0;
 
-    // Custom quantity selected
     if (value === "custom") {
       setCustomQuantities((prev) => ({
         ...prev,
@@ -120,7 +129,6 @@ const Cart = () => {
 
     const quantity = Number(value);
 
-    // Stock validation
     if (quantity > stock) {
       toast.error(
         `Only ${stock} unit${stock === 1 ? "" : "s"} of ${
@@ -146,6 +154,7 @@ const Cart = () => {
   // =========================
   // HANDLE CUSTOM INPUT
   // =========================
+
   const handleCustomQuantity = (productId, value) => {
     setCustomQuantities((prev) => ({
       ...prev,
@@ -156,6 +165,7 @@ const Cart = () => {
   // =========================
   // APPLY CUSTOM QUANTITY
   // =========================
+
   const applyCustomQuantity = (product) => {
     const productId = product._id;
     const stock = Number(product.stock) || 0;
@@ -166,7 +176,6 @@ const Cart = () => {
       return;
     }
 
-    // Stock validation
     if (value > stock) {
       toast.error(
         `Only ${stock} unit${stock === 1 ? "" : "s"} of ${
@@ -186,8 +195,9 @@ const Cart = () => {
   };
 
   // =========================
-  // REMOVE ITEM COMPLETELY
+  // REMOVE ENTIRE ITEM
   // =========================
+
   const deleteCartItem = (productId) => {
     const updatedCart = structuredClone(cartItems);
 
@@ -204,82 +214,386 @@ const Cart = () => {
     toast.success("Item removed from cart");
   };
 
+  // =========================
+  // LOAD RAZORPAY CHECKOUT
+  // =========================
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      // Razorpay already loaded
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const script = document.createElement("script");
+
+      script.src =
+        "https://checkout.razorpay.com/v1/checkout.js";
+
+      script.onload = () => {
+        resolve(true);
+      };
+
+      script.onerror = () => {
+        resolve(false);
+      };
+
+      document.body.appendChild(script);
+    });
+  };
+
+  // =========================
+  // ONLINE PAYMENT
+  // =========================
+
+  const handleOnlinePayment = async () => {
+    try {
+      console.log("ONLINE PAYMENT STARTED");
+
+      // =========================
+      // LOAD RAZORPAY
+      // =========================
+
+      const scriptLoaded = await loadRazorpayScript();
+
+      if (!scriptLoaded) {
+        toast.error(
+          "Unable to load Razorpay checkout. Please try again."
+        );
+        return;
+      }
+
+      // =========================
+      // CREATE RAZORPAY ORDER
+      // =========================
+
+      const orderData = {
+        items: cartArray.map((item) => ({
+          product: item._id,
+          quantity: item.quantity,
+        })),
+        address: selectedAddress._id,
+      };
+
+      console.log(
+        "RAZORPAY CREATE ORDER DATA:",
+        orderData
+      );
+
+      const { data } = await axios.post(
+        "/api/payment/create-order",
+        orderData
+      );
+
+      console.log(
+        "RAZORPAY CREATE ORDER RESPONSE:",
+        data
+      );
+
+      if (!data.success) {
+        toast.error(data.message);
+        return;
+      }
+
+      // =========================
+      // RAZORPAY OPTIONS
+      // =========================
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+
+        amount: data.order.amount,
+
+        currency: data.order.currency,
+
+        name: "FreshMart",
+
+        description: "Fresh groceries order",
+
+        order_id: data.order.id,
+
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+        },
+
+        theme: {
+          color: "#10b981",
+        },
+
+        // =================================================
+        // PAYMENT SUCCESS
+        // =================================================
+
+        handler: async function (response) {
+          console.log(
+            "RAZORPAY PAYMENT SUCCESS RESPONSE:",
+            response
+          );
+
+          try {
+            // =========================
+            // VERIFY PAYMENT
+            // =========================
+
+            const verificationData = {
+              razorpay_order_id:
+                response.razorpay_order_id,
+
+              razorpay_payment_id:
+                response.razorpay_payment_id,
+
+              razorpay_signature:
+                response.razorpay_signature,
+
+              items: cartArray.map((item) => ({
+                product: item._id,
+                quantity: item.quantity,
+              })),
+
+              address: selectedAddress._id,
+            };
+
+            console.log(
+              "PAYMENT VERIFICATION DATA:",
+              verificationData
+            );
+
+            const { data } = await axios.post(
+              "/api/payment/verify-payment",
+              verificationData
+            );
+
+            console.log(
+              "PAYMENT VERIFICATION RESPONSE:",
+              data
+            );
+
+            // =========================
+            // PAYMENT + ORDER SUCCESS
+            // =========================
+
+            if (data.success) {
+              toast.success(
+                "Payment successful! Order placed."
+              );
+
+              // Refresh latest product stock
+              await fetchProducts();
+
+              // Clear cart
+              setCartItems({});
+
+              // Go to My Orders
+              navigate("/my-orders");
+            } else {
+              toast.error(
+                data.message ||
+                  "Payment verification failed"
+              );
+            }
+          } catch (error) {
+            console.error(
+              "PAYMENT VERIFICATION ERROR:",
+              error
+            );
+
+            console.error(
+              "PAYMENT VERIFICATION RESPONSE:",
+              error.response?.data
+            );
+
+            toast.error(
+              error.response?.data?.message ||
+                error.message ||
+                "Payment verification failed"
+            );
+          }
+        },
+
+        // =========================
+        // PAYMENT MODAL CLOSED
+        // =========================
+
+        modal: {
+          ondismiss: function () {
+            console.log(
+              "RAZORPAY CHECKOUT CLOSED"
+            );
+          },
+        },
+      };
+
+      // =========================
+      // OPEN RAZORPAY
+      // =========================
+
+      const razorpay =
+        new window.Razorpay(options);
+
+      // =========================
+      // PAYMENT FAILED
+      // =========================
+
+      razorpay.on(
+        "payment.failed",
+        function (response) {
+          console.error(
+            "RAZORPAY PAYMENT FAILED:",
+            response
+          );
+
+          toast.error(
+            response.error?.description ||
+              "Payment failed. Please try again."
+          );
+        }
+      );
+
+      razorpay.open();
+    } catch (error) {
+      console.error(
+        "ONLINE PAYMENT ERROR:",
+        error
+      );
+
+      console.error(
+        "ONLINE PAYMENT RESPONSE:",
+        error.response?.data
+      );
+
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong with online payment"
+      );
+    }
+  };
+
+  // =========================
+  // PLACE ORDER
+  // =========================
+
   const placeOrder = async () => {
-    // Guest user → open login popup
+    // Guest user → login popup
     if (!user) {
-      sessionStorage.setItem("loginRedirect", "/cart");
+      sessionStorage.setItem(
+        "loginRedirect",
+        "/cart"
+      );
+
       setShowUserLogin(true);
+
       return;
     }
 
-    console.log("1. PLACE ORDER BUTTON CLICKED");
+    console.log(
+      "1. PLACE ORDER BUTTON CLICKED"
+    );
 
     try {
-      console.log("2. Selected Address:", selectedAddress);
-      console.log("3. Payment Option:", paymentOption);
-      console.log("4. Cart Array:", cartArray);
+      console.log(
+        "2. Selected Address:",
+        selectedAddress
+      );
+
+      console.log(
+        "3. Payment Option:",
+        paymentOption
+      );
+
+      console.log(
+        "4. Cart Array:",
+        cartArray
+      );
 
       if (!selectedAddress) {
-        console.log("5. NO ADDRESS SELECTED");
-        return toast.error("Please select an address");
+        console.log(
+          "5. NO ADDRESS SELECTED"
+        );
+
+        return toast.error(
+          "Please select an address"
+        );
       }
 
       if (cartArray.length === 0) {
-        console.log("5. CART IS EMPTY");
-        return toast.error("Your cart is empty");
+        console.log(
+          "5. CART IS EMPTY"
+        );
+
+        return toast.error(
+          "Your cart is empty"
+        );
       }
 
       // =========================
       // COD
       // =========================
+
       if (paymentOption === "COD") {
-        console.log("5. SENDING COD ORDER REQUEST");
+        console.log(
+          "5. SENDING COD ORDER REQUEST"
+        );
 
         const orderData = {
           items: cartArray.map((item) => ({
             product: item._id,
             quantity: item.quantity,
           })),
+
           address: selectedAddress._id,
         };
 
-        console.log("6. ORDER DATA:", orderData);
+        console.log(
+          "6. ORDER DATA:",
+          orderData
+        );
 
         const { data } = await axios.post(
           "/api/order/cod",
           orderData
         );
 
-        console.log("7. COD API RESPONSE:", data);
+        console.log(
+          "7. COD API RESPONSE:",
+          data
+        );
 
         if (data.success) {
           toast.success(data.message);
 
-          // Refresh latest product stock from backend
+          // Refresh latest stock
           await fetchProducts();
 
           setCartItems({});
 
-          console.log("8. ORDER PLACED SUCCESSFULLY");
+          console.log(
+            "8. ORDER PLACED SUCCESSFULLY"
+          );
 
           navigate("/my-orders");
         } else {
           toast.error(data.message);
         }
+
+        return;
       }
 
       // =========================
       // ONLINE PAYMENT
       // =========================
-      else if (paymentOption === "Online") {
-        console.log("ONLINE PAYMENT SELECTED");
 
-        toast.error(
-          "Online payment is not implemented yet. Please select Cash On Delivery."
-        );
+      if (paymentOption === "Online") {
+        await handleOnlinePayment();
       }
     } catch (error) {
-      console.error("PLACE ORDER ERROR:", error);
+      console.error(
+        "PLACE ORDER ERROR:",
+        error
+      );
+
       console.error(
         "PLACE ORDER RESPONSE:",
         error.response?.data
@@ -294,7 +608,9 @@ const Cart = () => {
   };
 
   const subtotal = totalCartAmount();
+
   const tax = (subtotal * 2) / 100;
+
   const totalAmount = subtotal + tax;
 
   return products.length > 0 && cartItems ? (
@@ -303,9 +619,11 @@ const Cart = () => {
       {/* =========================
           PAGE HEADER
       ========================== */}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
 
         <div className="flex items-center gap-3">
+
           <div
             className="w-11 h-11 rounded-2xl
               bg-gradient-to-br from-emerald-500 to-green-600
@@ -316,6 +634,7 @@ const Cart = () => {
           </div>
 
           <div>
+
             <h1 className="text-2xl md:text-3xl font-semibold text-gray-800">
               Shopping Cart
             </h1>
@@ -323,6 +642,7 @@ const Cart = () => {
             <p className="text-sm text-gray-500 mt-0.5">
               Review your fresh groceries before checkout.
             </p>
+
           </div>
         </div>
 
@@ -331,18 +651,22 @@ const Cart = () => {
             text-emerald-700 px-3.5 py-1.5 rounded-full
             text-sm font-semibold"
         >
-          {cartCount()} {cartCount() === 1 ? "Item" : "Items"}
+          {cartCount()}{" "}
+          {cartCount() === 1 ? "Item" : "Items"}
         </div>
+
       </div>
 
       {/* =========================
           MAIN CONTENT
       ========================== */}
+
       <div className="flex flex-col lg:flex-row gap-7">
 
         {/* =========================
             CART ITEMS
         ========================== */}
+
         <div className="flex-1">
 
           <div
@@ -351,6 +675,7 @@ const Cart = () => {
           >
 
             {/* Table Header */}
+
             <div
               className="hidden md:grid
                 grid-cols-[2fr_1fr_80px]
@@ -359,28 +684,43 @@ const Cart = () => {
                 text-gray-500 uppercase tracking-wide"
             >
               <p>Product Details</p>
-              <p className="text-center">Subtotal</p>
-              <p className="text-center">Action</p>
+
+              <p className="text-center">
+                Subtotal
+              </p>
+
+              <p className="text-center">
+                Action
+              </p>
             </div>
 
             {/* Products */}
+
             <div className="px-3 md:px-5">
 
               {cartArray.length > 0 ? (
                 cartArray.map((product, index) => {
-                  const isCustomQuantity =
-                    customQuantities[product._id] !== undefined;
 
-                  const stock = Number(product.stock) || 0;
+                  const isCustomQuantity =
+                    customQuantities[product._id] !==
+                    undefined;
+
+                  const stock =
+                    Number(product.stock) || 0;
 
                   const currentQuantity =
-                    Number(cartItems[product._id]) || 1;
+                    Number(
+                      cartItems[product._id]
+                    ) || 1;
 
                   return (
                     <div
-                      key={product._id || index}
+                      key={
+                        product._id || index
+                      }
                       className={`py-4 md:py-5 ${
-                        cartArray.length !== index + 1
+                        cartArray.length !==
+                        index + 1
                           ? "border-b border-gray-100"
                           : ""
                       }`}
@@ -389,6 +729,7 @@ const Cart = () => {
                       {/* =========================
                           DESKTOP
                       ========================== */}
+
                       <div
                         className="hidden md:grid
                           grid-cols-[2fr_1fr_80px]
@@ -396,6 +737,7 @@ const Cart = () => {
                       >
 
                         {/* Product */}
+
                         <div className="flex items-center gap-4">
 
                           <div
@@ -403,6 +745,7 @@ const Cart = () => {
                               navigate(
                                 `/product/${product.category}/${product._id}`
                               );
+
                               scrollTo(0, 0);
                             }}
                             className="cursor-pointer w-24 h-24
@@ -415,7 +758,9 @@ const Cart = () => {
                           >
                             <img
                               className="max-w-full h-full object-contain"
-                              src={getImageUrl(product.image?.[0])}
+                              src={getImageUrl(
+                                product.image?.[0]
+                              )}
                               alt={product.name}
                             />
                           </div>
@@ -427,6 +772,7 @@ const Cart = () => {
                                 navigate(
                                   `/product/${product.category}/${product._id}`
                                 );
+
                                 scrollTo(0, 0);
                               }}
                               className="font-semibold text-gray-800
@@ -448,12 +794,15 @@ const Cart = () => {
                             <p className="text-sm text-gray-500 mt-2">
                               Weight:{" "}
                               <span className="text-gray-700">
-                                {product.weight || "N/A"}
+                                {product.weight ||
+                                  "N/A"}
                               </span>
                             </p>
 
                             {/* Quantity */}
+
                             <div className="flex items-center gap-2 mt-2">
+
                               <span className="text-xs text-gray-500">
                                 Quantity
                               </span>
@@ -465,6 +814,7 @@ const Cart = () => {
                                     rounded-lg overflow-hidden
                                     bg-gray-50"
                                 >
+
                                   <select
                                     onChange={(e) =>
                                       handleQuantityChange(
@@ -472,41 +822,67 @@ const Cart = () => {
                                         e.target.value
                                       )
                                     }
-                                    value={String(currentQuantity)}
+                                    value={String(
+                                      currentQuantity
+                                    )}
                                     className="appearance-none
                                       outline-none bg-transparent
                                       px-2 pr-7 py-1
                                       text-sm text-gray-700
                                       cursor-pointer"
                                   >
+
                                     {Array.from(
                                       {
-                                        length: Math.min(
-                                          9,
-                                          stock
-                                        ),
+                                        length:
+                                          Math.min(
+                                            9,
+                                            stock
+                                          ),
                                       },
-                                      (_, index) => index + 1
-                                    ).map((quantity) => (
-                                      <option
-                                        key={quantity}
-                                        value={quantity}
-                                      >
-                                        {quantity}
-                                      </option>
-                                    ))}
-
-                                    {/* Show current custom quantity */}
-                                    {currentQuantity > 9 &&
-                                      currentQuantity <= stock && (
-                                        <option value={currentQuantity}>
-                                          {currentQuantity}
+                                      (
+                                        _,
+                                        index
+                                      ) =>
+                                        index + 1
+                                    ).map(
+                                      (
+                                        quantity
+                                      ) => (
+                                        <option
+                                          key={
+                                            quantity
+                                          }
+                                          value={
+                                            quantity
+                                          }
+                                        >
+                                          {
+                                            quantity
+                                          }
                                         </option>
-                                      )}
+                                      )
+                                    )}
+
+                                    {currentQuantity >
+                                      9 &&
+                                      currentQuantity <=
+                                        stock && (
+                                      <option
+                                        value={
+                                          currentQuantity
+                                        }
+                                      >
+                                        {
+                                          currentQuantity
+                                        }
+                                      </option>
+                                    )}
 
                                     <option value="custom">
                                       Custom
                                     </option>
+
                                   </select>
 
                                   <FaChevronDown
@@ -515,6 +891,7 @@ const Cart = () => {
                                       text-[9px] text-gray-400
                                       pointer-events-none"
                                   />
+
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-1.5">
@@ -536,8 +913,13 @@ const Cart = () => {
                                       )
                                     }
                                     onKeyDown={(e) => {
-                                      if (e.key === "Enter") {
-                                        applyCustomQuantity(product);
+                                      if (
+                                        e.key ===
+                                        "Enter"
+                                      ) {
+                                        applyCustomQuantity(
+                                          product
+                                        );
                                       }
                                     }}
                                     className="w-16 border
@@ -552,7 +934,9 @@ const Cart = () => {
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      applyCustomQuantity(product)
+                                      applyCustomQuantity(
+                                        product
+                                      )
                                     }
                                     className="px-2.5 py-1
                                       rounded-lg bg-emerald-500
@@ -563,34 +947,47 @@ const Cart = () => {
                                   >
                                     ✓
                                   </button>
+
                                 </div>
                               )}
+
                             </div>
 
-                            {/* Stock Information */}
+                            {/* Stock */}
+
                             {stock > 0 && (
                               <p className="text-[10px] text-gray-400 mt-1">
                                 {stock} available
                               </p>
                             )}
+
                           </div>
                         </div>
 
                         {/* Price */}
+
                         <div className="text-center">
+
                           <p className="text-lg font-semibold text-gray-800">
-                            ₹{product.offerPrice * product.quantity}
+                            ₹
+                            {product.offerPrice *
+                              product.quantity}
                           </p>
 
                           <p className="text-xs text-gray-400 mt-0.5">
-                            ₹{product.offerPrice} each
+                            ₹
+                            {product.offerPrice} each
                           </p>
+
                         </div>
 
                         {/* Remove */}
+
                         <button
                           onClick={() =>
-                            deleteCartItem(product._id)
+                            deleteCartItem(
+                              product._id
+                            )
                           }
                           className="mx-auto w-9 h-9 rounded-full
                             bg-red-50 text-red-500
@@ -601,11 +998,13 @@ const Cart = () => {
                         >
                           <FaTrashCan className="text-sm" />
                         </button>
+
                       </div>
 
                       {/* =========================
-                          MOBILE PRODUCT
+                          MOBILE
                       ========================== */}
+
                       <div className="md:hidden">
 
                         <div className="flex gap-3">
@@ -615,6 +1014,7 @@ const Cart = () => {
                               navigate(
                                 `/product/${product.category}/${product._id}`
                               );
+
                               scrollTo(0, 0);
                             }}
                             className="cursor-pointer w-20 h-20
@@ -626,7 +1026,9 @@ const Cart = () => {
                           >
                             <img
                               className="max-w-full h-full object-contain"
-                              src={getImageUrl(product.image?.[0])}
+                              src={getImageUrl(
+                                product.image?.[0]
+                              )}
                               alt={product.name}
                             />
                           </div>
@@ -636,11 +1038,13 @@ const Cart = () => {
                             <div className="flex items-start justify-between gap-2">
 
                               <div className="min-w-0">
+
                                 <p
                                   onClick={() => {
                                     navigate(
                                       `/product/${product.category}/${product._id}`
                                     );
+
                                     scrollTo(0, 0);
                                   }}
                                   className="font-semibold text-gray-800
@@ -657,11 +1061,14 @@ const Cart = () => {
                                 >
                                   {product.category}
                                 </span>
+
                               </div>
 
                               <button
                                 onClick={() =>
-                                  deleteCartItem(product._id)
+                                  deleteCartItem(
+                                    product._id
+                                  )
                                 }
                                 className="w-8 h-8 shrink-0 rounded-full
                                   bg-red-50 text-red-500
@@ -670,18 +1077,21 @@ const Cart = () => {
                               >
                                 <FaTrashCan className="text-xs" />
                               </button>
+
                             </div>
 
                             <p className="text-xs text-gray-500 mt-2">
                               Weight:{" "}
                               <span className="text-gray-700">
-                                {product.weight || "N/A"}
+                                {product.weight ||
+                                  "N/A"}
                               </span>
                             </p>
 
                             <div className="flex items-center justify-between mt-2">
 
                               <div className="flex items-center gap-2">
+
                                 <span className="text-xs text-gray-500">
                                   Qty:
                                 </span>
@@ -696,7 +1106,9 @@ const Cart = () => {
                                           e.target.value
                                         )
                                       }
-                                      value={String(currentQuantity)}
+                                      value={String(
+                                        currentQuantity
+                                      )}
                                       className="appearance-none
                                         border border-gray-200
                                         rounded-md bg-gray-50
@@ -704,36 +1116,58 @@ const Cart = () => {
                                         text-xs outline-none
                                         cursor-pointer"
                                     >
+
                                       {Array.from(
                                         {
-                                          length: Math.min(
-                                            9,
-                                            stock
-                                          ),
+                                          length:
+                                            Math.min(
+                                              9,
+                                              stock
+                                            ),
                                         },
-                                        (_, index) => index + 1
-                                      ).map((quantity) => (
-                                        <option
-                                          key={quantity}
-                                          value={quantity}
-                                        >
-                                          {quantity}
-                                        </option>
-                                      ))}
-
-                                      {/* Show current custom quantity */}
-                                      {currentQuantity > 9 &&
-                                        currentQuantity <= stock && (
+                                        (
+                                          _,
+                                          index
+                                        ) =>
+                                          index + 1
+                                      ).map(
+                                        (
+                                          quantity
+                                        ) => (
                                           <option
-                                            value={currentQuantity}
+                                            key={
+                                              quantity
+                                            }
+                                            value={
+                                              quantity
+                                            }
                                           >
-                                            {currentQuantity}
+                                            {
+                                              quantity
+                                            }
                                           </option>
-                                        )}
+                                        )
+                                      )}
+
+                                      {currentQuantity >
+                                        9 &&
+                                        currentQuantity <=
+                                          stock && (
+                                        <option
+                                          value={
+                                            currentQuantity
+                                          }
+                                        >
+                                          {
+                                            currentQuantity
+                                          }
+                                        </option>
+                                      )}
 
                                       <option value="custom">
                                         Custom
                                       </option>
+
                                     </select>
 
                                     <FaChevronDown
@@ -743,6 +1177,7 @@ const Cart = () => {
                                         text-[8px] text-gray-400
                                         pointer-events-none"
                                     />
+
                                   </div>
                                 ) : (
                                   <div className="flex items-center gap-1">
@@ -764,8 +1199,13 @@ const Cart = () => {
                                         )
                                       }
                                       onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                          applyCustomQuantity(product);
+                                        if (
+                                          e.key ===
+                                          "Enter"
+                                        ) {
+                                          applyCustomQuantity(
+                                            product
+                                          );
                                         }
                                       }}
                                       className="w-14 border
@@ -778,7 +1218,9 @@ const Cart = () => {
                                     <button
                                       type="button"
                                       onClick={() =>
-                                        applyCustomQuantity(product)
+                                        applyCustomQuantity(
+                                          product
+                                        )
                                       }
                                       className="w-6 h-6
                                         rounded-md
@@ -789,8 +1231,10 @@ const Cart = () => {
                                     >
                                       ✓
                                     </button>
+
                                   </div>
                                 )}
+
                               </div>
 
                               <p className="font-semibold text-gray-800">
@@ -798,6 +1242,7 @@ const Cart = () => {
                                 {product.offerPrice *
                                   product.quantity}
                               </p>
+
                             </div>
 
                             {stock > 0 && (
@@ -805,14 +1250,19 @@ const Cart = () => {
                                 {stock} available
                               </p>
                             )}
+
                           </div>
+
                         </div>
+
                       </div>
+
                     </div>
                   );
                 })
               ) : (
                 <div className="py-14 text-center">
+
                   <div
                     className="w-14 h-14 mx-auto rounded-full
                       bg-gray-50 text-gray-400
@@ -824,12 +1274,16 @@ const Cart = () => {
                   <p className="text-gray-600 font-medium mt-3">
                     Your cart is empty
                   </p>
+
                 </div>
               )}
+
             </div>
+
           </div>
 
           {/* Continue Shopping */}
+
           <button
             onClick={() => {
               setSearchQuery("");
@@ -847,11 +1301,13 @@ const Cart = () => {
 
             Continue Shopping
           </button>
+
         </div>
 
         {/* =========================
             ORDER SUMMARY
         ========================== */}
+
         <div className="lg:w-[350px] w-full">
 
           <div
@@ -861,11 +1317,13 @@ const Cart = () => {
           >
 
             {/* Summary Header */}
+
             <div
               className="px-5 py-4
                 bg-gradient-to-r from-emerald-50
                 to-green-50 border-b border-emerald-100"
             >
+
               <div className="flex items-center gap-2.5">
 
                 <div
@@ -878,6 +1336,7 @@ const Cart = () => {
                 </div>
 
                 <div>
+
                   <h2 className="text-lg font-semibold text-gray-800">
                     Order Summary
                   </h2>
@@ -885,8 +1344,11 @@ const Cart = () => {
                   <p className="text-xs text-gray-500">
                     Complete your order
                   </p>
+
                 </div>
+
               </div>
+
             </div>
 
             <div className="p-5">
@@ -894,13 +1356,17 @@ const Cart = () => {
               {/* =========================
                   DELIVERY ADDRESS
               ========================== */}
+
               <div>
+
                 <div className="flex items-center gap-2 mb-2.5">
+
                   <FaLocationDot className="text-emerald-600 text-sm" />
 
                   <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                     Delivery Address
                   </p>
+
                 </div>
 
                 <div className="relative">
@@ -910,6 +1376,7 @@ const Cart = () => {
                       gap-3 p-3 rounded-xl
                       bg-gray-50 border border-gray-100"
                   >
+
                     <p className="text-sm text-gray-600 leading-5">
                       {selectedAddress
                         ? `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.country}`
@@ -918,7 +1385,9 @@ const Cart = () => {
 
                     <button
                       onClick={() =>
-                        setShowAddress(!showAddress)
+                        setShowAddress(
+                          !showAddress
+                        )
                       }
                       className="text-xs font-semibold
                         text-indigo-500 hover:text-indigo-600
@@ -926,9 +1395,11 @@ const Cart = () => {
                     >
                       Change
                     </button>
+
                   </div>
 
                   {/* Address Dropdown */}
+
                   {showAddress && (
                     <div
                       className="absolute top-full left-0
@@ -937,26 +1408,38 @@ const Cart = () => {
                         shadow-xl rounded-xl
                         text-sm w-full z-30 overflow-hidden"
                     >
-                      {address.map((address, index) => (
-                        <p
-                          key={index}
-                          onClick={() => {
-                            setSelectedAddress(address);
-                            setShowAddress(false);
-                          }}
-                          className="text-gray-600 px-3 py-2.5
-                            hover:bg-emerald-50
-                            hover:text-emerald-700
-                            cursor-pointer transition-colors"
-                        >
-                          {address.street}, {address.city},{" "}
-                          {address.state}, {address.country}
-                        </p>
-                      ))}
+
+                      {address.map(
+                        (address, index) => (
+                          <p
+                            key={index}
+                            onClick={() => {
+                              setSelectedAddress(
+                                address
+                              );
+
+                              setShowAddress(
+                                false
+                              );
+                            }}
+                            className="text-gray-600 px-3 py-2.5
+                              hover:bg-emerald-50
+                              hover:text-emerald-700
+                              cursor-pointer transition-colors"
+                          >
+                            {address.street},{" "}
+                            {address.city},{" "}
+                            {address.state},{" "}
+                            {address.country}
+                          </p>
+                        )
+                      )}
 
                       <p
                         onClick={() =>
-                          navigate("/add-address")
+                          navigate(
+                            "/add-address"
+                          )
                         }
                         className="flex items-center
                           justify-center gap-2
@@ -968,28 +1451,37 @@ const Cart = () => {
                         <FaPlus className="text-[10px]" />
                         Add address
                       </p>
+
                     </div>
                   )}
+
                 </div>
+
               </div>
 
               {/* =========================
                   PAYMENT METHOD
               ========================== */}
+
               <div className="mt-5">
 
                 <div className="flex items-center gap-2 mb-2.5">
+
                   <FaCreditCard className="text-indigo-500 text-sm" />
 
                   <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                     Payment Method
                   </p>
+
                 </div>
 
                 <div className="relative">
+
                   <select
                     onChange={(e) =>
-                      setPaymentOption(e.target.value)
+                      setPaymentOption(
+                        e.target.value
+                      )
                     }
                     value={paymentOption}
                     className="w-full appearance-none
@@ -1001,6 +1493,7 @@ const Cart = () => {
                       focus:ring-4 focus:ring-emerald-50
                       cursor-pointer transition-all"
                   >
+
                     <option value="COD">
                       Cash On Delivery
                     </option>
@@ -1008,6 +1501,7 @@ const Cart = () => {
                     <option value="Online">
                       Online Payment
                     </option>
+
                   </select>
 
                   <FaChevronDown
@@ -1016,38 +1510,49 @@ const Cart = () => {
                       text-gray-400 text-xs
                       pointer-events-none"
                   />
+
                 </div>
+
               </div>
 
               {/* Divider */}
+
               <div className="border-t border-gray-100 my-5" />
 
               {/* =========================
                   PRICE DETAILS
               ========================== */}
+
               <div className="space-y-3">
 
                 <p className="flex justify-between text-sm text-gray-500">
+
                   <span>Price</span>
+
                   <span className="font-medium text-gray-700">
                     ₹{subtotal}
                   </span>
+
                 </p>
 
                 <p className="flex justify-between text-sm text-gray-500">
+
                   <span>Shipping Fee</span>
 
                   <span className="text-green-600 font-medium">
                     Free
                   </span>
+
                 </p>
 
                 <p className="flex justify-between text-sm text-gray-500">
+
                   <span>Tax (2%)</span>
 
                   <span className="font-medium text-gray-700">
                     ₹{tax}
                   </span>
+
                 </p>
 
                 <div
@@ -1056,6 +1561,7 @@ const Cart = () => {
                 />
 
                 <p className="flex justify-between items-center">
+
                   <span className="text-base font-semibold text-gray-700">
                     Total Amount
                   </span>
@@ -1063,17 +1569,21 @@ const Cart = () => {
                   <span className="text-xl font-bold text-emerald-600">
                     ₹{totalAmount}
                   </span>
+
                 </p>
+
               </div>
 
               {/* =========================
                   DELIVERY INFO
               ========================== */}
+
               <div
                 className="flex items-center gap-2.5
                   bg-emerald-50 border border-emerald-100
                   rounded-xl p-3 mt-5"
               >
+
                 <div
                   className="w-8 h-8 rounded-lg bg-white
                     flex items-center justify-center
@@ -1083,6 +1593,7 @@ const Cart = () => {
                 </div>
 
                 <div>
+
                   <p className="text-xs font-semibold text-gray-700">
                     Free Delivery
                   </p>
@@ -1090,12 +1601,15 @@ const Cart = () => {
                   <p className="text-[10px] text-gray-500">
                     Fresh groceries delivered to your door
                   </p>
+
                 </div>
+
               </div>
 
               {/* =========================
                   CHECKOUT BUTTON
               ========================== */}
+
               <button
                 type="button"
                 onClick={placeOrder}
@@ -1119,10 +1633,15 @@ const Cart = () => {
               <p className="text-center text-[10px] text-gray-400 mt-2.5">
                 Secure checkout • FreshMart
               </p>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   ) : null;
 };
