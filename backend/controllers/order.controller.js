@@ -1,7 +1,11 @@
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 
-// Place order COD: /api/order/cod
+// =====================================================
+// PLACE ORDER COD
+// /api/order/cod
+// =====================================================
+
 export const placeOrderCOD = async (req, res) => {
   try {
     const userId = req.user;
@@ -18,7 +22,24 @@ export const placeOrderCOD = async (req, res) => {
 
     let amount = 0;
 
+    // Keep track of deducted stock
+    // so stock can be restored if order creation fails.
+    const deductedStock = [];
+
     for (const item of items) {
+      const requestedQuantity = Number(item.quantity);
+
+      // =========================
+      // QUANTITY VALIDATION
+      // =========================
+
+      if (!requestedQuantity || requestedQuantity < 1) {
+        return res.status(400).json({
+          message: "Invalid product quantity",
+          success: false,
+        });
+      }
+
       const product = await Product.findById(item.product);
 
       if (!product) {
@@ -39,15 +60,6 @@ export const placeOrderCOD = async (req, res) => {
       // STOCK VALIDATION
       // =========================
 
-      const requestedQuantity = Number(item.quantity);
-
-      if (!requestedQuantity || requestedQuantity < 1) {
-        return res.status(400).json({
-          message: `Invalid quantity for product: ${product.name}`,
-          success: false,
-        });
-      }
-
       if (!product.inStock || product.stock <= 0) {
         return res.status(400).json({
           message: `${product.name} is currently out of stock`,
@@ -65,6 +77,70 @@ export const placeOrderCOD = async (req, res) => {
       }
 
       // =========================
+      // ATOMIC STOCK DEDUCTION
+      // =========================
+      //
+      // Stock is reduced directly in MongoDB.
+      // $gte ensures stock can never become negative.
+      //
+      // Example:
+      // Stock = 10
+      // Ordered = 7
+      // New stock = 3
+
+      const updatedProduct = await Product.findOneAndUpdate(
+        {
+          _id: product._id,
+          inStock: true,
+          stock: { $gte: requestedQuantity },
+        },
+        {
+          $inc: {
+            stock: -requestedQuantity,
+          },
+        },
+        {
+          new: true,
+        }
+      );
+
+      // Another order may have consumed the stock
+      // between validation and update.
+      if (!updatedProduct) {
+        const latestProduct = await Product.findById(product._id);
+
+        if (!latestProduct || latestProduct.stock <= 0) {
+          return res.status(400).json({
+            message: `${product.name} is currently out of stock`,
+            success: false,
+          });
+        }
+
+        return res.status(400).json({
+          message: `Only ${latestProduct.stock} unit${
+            latestProduct.stock === 1 ? "" : "s"
+          } of ${product.name} are available`,
+          success: false,
+        });
+      }
+
+      // =========================
+      // UPDATE IN-STOCK STATUS
+      // =========================
+
+      if (updatedProduct.stock === 0) {
+        await Product.findByIdAndUpdate(product._id, {
+          inStock: false,
+        });
+      }
+
+      // Remember deduction in case order creation fails.
+      deductedStock.push({
+        productId: product._id,
+        quantity: requestedQuantity,
+      });
+
+      // =========================
       // ADD ORDER ITEM
       // =========================
 
@@ -78,18 +154,56 @@ export const placeOrderCOD = async (req, res) => {
       amount += product.offerPrice * requestedQuantity;
     }
 
-    // Add tax charge 2%
+    // =========================
+    // ADD TAX / CHARGE
+    // =========================
+
     amount += Math.floor((amount * 2) / 100);
 
-    await Order.create({
-      userId,
-      items: orderItems,
-      address,
-      amount,
-      paymentType: "COD",
-      isPaid: false,
-      status: "Order Placed",
-    });
+    // =========================
+    // CREATE ORDER
+    // =========================
+
+    try {
+      await Order.create({
+        userId,
+        items: orderItems,
+        address,
+        amount,
+        paymentType: "COD",
+        isPaid: false,
+        status: "Order Placed",
+      });
+    } catch (orderError) {
+      // =========================
+      // RESTORE STOCK
+      // =========================
+      //
+      // If order creation fails after stock deduction,
+      // restore the deducted quantities.
+
+      for (const deduction of deductedStock) {
+        const restoredProduct = await Product.findByIdAndUpdate(
+          deduction.productId,
+          {
+            $inc: {
+              stock: deduction.quantity,
+            },
+          },
+          {
+            new: true,
+          }
+        );
+
+        if (restoredProduct) {
+          await Product.findByIdAndUpdate(deduction.productId, {
+            inStock: restoredProduct.stock > 0,
+          });
+        }
+      }
+
+      throw orderError;
+    }
 
     res.status(201).json({
       message: "Order placed successfully",
@@ -105,7 +219,11 @@ export const placeOrderCOD = async (req, res) => {
   }
 };
 
-// Order details for individual user: /api/order/user
+// =====================================================
+// ORDER DETAILS FOR INDIVIDUAL USER
+// /api/order/user
+// =====================================================
+
 export const getUserOrders = async (req, res) => {
   try {
     const userId = req.user;
@@ -133,7 +251,11 @@ export const getUserOrders = async (req, res) => {
   }
 };
 
-// Personal Grocery Insights for logged-in user: /api/order/insights
+// =====================================================
+// PERSONAL GROCERY INSIGHTS
+// /api/order/insights
+// =====================================================
+
 export const getUserInsights = async (req, res) => {
   try {
     const userId = req.user;
@@ -242,7 +364,10 @@ export const getUserInsights = async (req, res) => {
   }
 };
 
-// Get all orders for admin
+// =====================================================
+// GET ALL ORDERS FOR ADMIN
+// =====================================================
+
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -267,7 +392,10 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// Get orders for logged-in seller
+// =====================================================
+// GET ORDERS FOR LOGGED-IN SELLER
+// =====================================================
+
 export const getSellerOrders = async (req, res) => {
   try {
     const sellerId = req.seller;
@@ -307,7 +435,10 @@ export const getSellerOrders = async (req, res) => {
   }
 };
 
-// Update order status for logged-in seller
+// =====================================================
+// UPDATE ORDER STATUS FOR LOGGED-IN SELLER
+// =====================================================
+
 export const updateSellerOrderStatus = async (req, res) => {
   try {
     const sellerId = req.seller;

@@ -7,6 +7,8 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const {
     setShowUserLogin,
@@ -19,34 +21,27 @@ const Auth = () => {
     try {
       e.preventDefault();
 
+      setLoading(true);
+
       const { data } = await axios.post(`/api/user/${state}`, {
         name,
         email,
         password,
       });
 
-      console.log("data", data);
-
       if (data.success) {
         toast.success(data.message);
 
-        // Check if login/register was started from Cart
-        const loginRedirect = sessionStorage.getItem("loginRedirect");
+        const loginRedirect =
+          sessionStorage.getItem("loginRedirect");
 
-        // Set logged-in user
         setUser(data.user);
-
-        // Close login popup
         setShowUserLogin(false);
 
         if (loginRedirect) {
-          // Remove redirect flag
           sessionStorage.removeItem("loginRedirect");
-
-          // Return to Cart
           navigate(loginRedirect);
         } else {
-          // Normal login/register → Home
           navigate("/");
         }
       } else {
@@ -58,92 +53,199 @@ const Auth = () => {
           error.message ||
           "Something went wrong"
       );
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const switchMode = () => {
+    setState((prev) =>
+      prev === "login" ? "register" : "login"
+    );
+
+    setPassword("");
+    setShowPassword(false);
   };
 
   return (
     <div
-      onClick={() => {
-        setShowUserLogin(false);
-      }}
-      className="fixed top-0 bottom-0 left-0 right-0 z-40 flex items-center justify-center bg-black/50 text-gray-600"
+      onClick={() => setShowUserLogin(false)}
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4"
     >
       <form
         onSubmit={submitHandler}
         onClick={(e) => e.stopPropagation()}
-        className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] text-gray-500 rounded-lg shadow-xl border border-gray-200 bg-white"
+        className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl px-5 py-7 sm:px-8 sm:py-9"
       >
-        <p className="text-2xl font-medium m-auto">
-          <span className="text-indigo-500">User</span>{" "}
-          {state === "login" ? "Login" : "Sign Up"}
-        </p>
+        {/* Header */}
+        <div className="text-center mb-7">
 
+          <div className="w-10 h-10 mx-auto rounded-lg bg-green-500 flex items-center justify-center">
+            <span className="text-white font-bold text-lg">
+              F
+            </span>
+          </div>
+
+          <p className="text-sm font-medium text-green-600 mt-4">
+            Welcome to FreshMart
+          </p>
+
+          <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mt-1">
+            {state === "login"
+              ? "Welcome Back"
+              : "Create Account"}
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-2">
+            {state === "login"
+              ? "Sign in to continue shopping."
+              : "Create your account and start shopping."}
+          </p>
+
+        </div>
+
+        {/* Name */}
         {state === "register" && (
-          <div className="w-full">
-            <p>Name</p>
+          <div className="mb-5">
+
+            <label
+              htmlFor="user-name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Name
+            </label>
 
             <input
-              onChange={(e) => setName(e.target.value)}
-              value={name}
-              placeholder="type here"
-              className="border border-gray-200 rounded w-full p-2 mt-1 outline-indigo-500"
+              id="user-name"
               type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              autoComplete="name"
+              className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
               required
             />
+
           </div>
         )}
 
-        <div className="w-full">
-          <p>Email</p>
+        {/* Email */}
+        <div className="mb-5">
+
+          <label
+            htmlFor="user-email"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Email
+          </label>
 
           <input
-            onChange={(e) => setEmail(e.target.value)}
-            value={email}
-            placeholder="type here"
-            className="border border-gray-200 rounded w-full p-2 mt-1 outline-indigo-500"
+            id="user-email"
             type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            autoComplete="email"
+            className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
             required
           />
+
         </div>
 
-        <div className="w-full">
-          <p>Password</p>
+        {/* Password */}
+        <div className="mb-4">
 
-          <input
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-            placeholder="type here"
-            className="border border-gray-200 rounded w-full p-2 mt-1 outline-indigo-500"
-            type="password"
-            required
-          />
+          <label
+            htmlFor="user-password"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Password
+          </label>
+
+          <div className="relative">
+
+            <input
+              id="user-password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={
+                state === "register"
+                  ? "Create a password"
+                  : "Enter your password"
+              }
+              autoComplete={
+                state === "register"
+                  ? "new-password"
+                  : "current-password"
+              }
+              className="w-full h-12 px-4 pr-16 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
+              required
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword((prev) => !prev)
+              }
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-800 cursor-pointer"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+
+          </div>
+
         </div>
 
-        {state === "register" ? (
-          <p>
-            Already have account?{" "}
-            <span
-              onClick={() => setState("login")}
-              className="text-indigo-500 cursor-pointer"
-            >
-              click here
-            </span>
-          </p>
-        ) : (
-          <p>
-            Create an account?{" "}
-            <span
-              onClick={() => setState("register")}
-              className="text-indigo-500 cursor-pointer"
-            >
-              click here
-            </span>
-          </p>
-        )}
+        {/* Switch Mode */}
+        <div className="text-sm text-center mb-5">
 
-        <button className="bg-indigo-500 hover:bg-indigo-600 transition-all text-white w-full py-2 rounded-md cursor-pointer">
-          {state === "register" ? "Create Account" : "Login"}
+          {state === "register" ? (
+            <p className="text-gray-500">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={switchMode}
+                className="text-green-600 hover:text-green-700 font-medium cursor-pointer"
+              >
+                Login
+              </button>
+            </p>
+          ) : (
+            <p className="text-gray-500">
+              Don't have an account?{" "}
+              <button
+                type="button"
+                onClick={switchMode}
+                className="text-green-600 hover:text-green-700 font-medium cursor-pointer"
+              >
+                Create Account
+              </button>
+            </p>
+          )}
+
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-12 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition cursor-pointer disabled:bg-green-400 disabled:cursor-not-allowed"
+        >
+          {loading
+            ? state === "register"
+              ? "Creating Account..."
+              : "Signing in..."
+            : state === "register"
+            ? "Create Account"
+            : "Login"}
         </button>
+
+        {/* Footer */}
+        <p className="text-[11px] text-gray-400 text-center mt-5">
+          FreshMart • Fresh groceries delivered to you
+        </p>
+
       </form>
     </div>
   );

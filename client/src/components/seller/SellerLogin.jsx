@@ -8,6 +8,8 @@ const SellerLogin = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isSeller) {
@@ -18,6 +20,8 @@ const SellerLogin = () => {
   const SubmitHandler = async (e) => {
     try {
       e.preventDefault();
+
+      setLoading(true);
 
       const { data } = await axios.post("/api/seller/login", {
         email,
@@ -34,61 +38,151 @@ const SellerLogin = () => {
       toast.error(
         error.response?.data?.message || error.message
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     !isSeller && (
-      <div className="fixed top-0 bottom-0 left-0 right-0 z-40 flex items-center justify-center bg-black/50 text-gray-600">
-        <form
-          onSubmit={SubmitHandler}
-          className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] text-gray-500 rounded-lg shadow-xl border border-gray-200 bg-white"
-        >
-          <p className="text-2xl font-medium m-auto">
-            <span className="text-indigo-500">Seller</span> Login
-          </p>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
 
-          <div className="w-full">
-            <p>Email</p>
-            <input
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              placeholder="Type here"
-              className="border border-gray-200 rounded w-full p-2 mt-1 outline-indigo-500"
-              type="email"
-              required
-            />
+        {/* Branding */}
+        <div className="pt-8 sm:pt-10 text-center">
+          <div className="inline-flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">
+                F
+              </span>
+            </div>
+
+            <div className="text-left">
+              <h1 className="text-lg font-semibold text-gray-900">
+                FreshMart
+              </h1>
+
+              <p className="text-xs text-gray-400">
+                Seller Portal
+              </p>
+            </div>
           </div>
+        </div>
 
-          <div className="w-full">
-            <p>Password</p>
-            <input
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-              placeholder="Type here"
-              className="border border-gray-200 rounded w-full p-2 mt-1 outline-indigo-500"
-              type="password"
-              required
-            />
+        {/* Login Area */}
+        <div className="flex-1 flex items-center justify-center px-4 py-10 sm:px-6">
+
+          <div className="w-full max-w-md">
+
+            {/* Login Card */}
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-7 sm:px-8 sm:py-9">
+
+              {/* Heading */}
+              <div className="mb-7">
+                <p className="text-sm font-medium text-green-600 mb-2">
+                  Welcome back
+                </p>
+
+                <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+                  Seller Login
+                </h2>
+
+                <p className="text-sm text-gray-500 mt-2">
+                  Sign in to manage your store and products.
+                </p>
+              </div>
+
+              {/* Form */}
+              <form
+                onSubmit={SubmitHandler}
+                className="space-y-5"
+              >
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    autoComplete="email"
+                    className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                    required
+                  />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      className="w-full h-12 px-4 pr-16 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowPassword((prev) => !prev)
+                      }
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-800 cursor-pointer"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Login Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-12 rounded-lg bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white text-sm font-medium transition cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {loading ? "Signing in..." : "Login"}
+                </button>
+
+              </form>
+
+              {/* Register */}
+              <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+                <p className="text-sm text-gray-500">
+                  Don't have a seller account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/seller/register")}
+                    className="text-green-600 hover:text-green-700 font-medium cursor-pointer"
+                  >
+                    Create Seller Account
+                  </button>
+                </p>
+              </div>
+
+            </div>
+
+            {/* Back */}
+            <div className="text-center mt-6">
+              <button
+                type="button"
+                onClick={() => navigate("/seller")}
+                className="text-sm text-gray-500 hover:text-green-600 transition cursor-pointer"
+              >
+                Back to Seller Portal
+              </button>
+            </div>
+
           </div>
-
-          <button
-            className="bg-indigo-500 hover:bg-indigo-600 transition-all text-white w-full py-2 rounded-md cursor-pointer"
-            type="submit"
-          >
-            Login
-          </button>
-
-          <p className="text-sm text-center w-full">
-            Don't have a seller account?{" "}
-            <span
-              onClick={() => navigate("/seller/register")}
-              className="text-indigo-500 cursor-pointer font-medium"
-            >
-              Create Seller Account
-            </span>
-          </p>
-        </form>
+        </div>
       </div>
     )
   );

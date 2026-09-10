@@ -25,6 +25,7 @@ const Cart = () => {
     updateCartItem,
     axios,
     user,
+    fetchProducts,
     setSearchQuery,
     setShowUserLogin,
   } = useAppContext();
@@ -122,7 +123,9 @@ const Cart = () => {
     // Stock validation
     if (quantity > stock) {
       toast.error(
-        `Only ${stock} unit${stock === 1 ? "" : "s"} of ${product.name} ${stock === 1 ? "is" : "are"} available.`
+        `Only ${stock} unit${stock === 1 ? "" : "s"} of ${
+          product.name
+        } ${stock === 1 ? "is" : "are"} available.`
       );
       return;
     }
@@ -166,7 +169,9 @@ const Cart = () => {
     // Stock validation
     if (value > stock) {
       toast.error(
-        `Only ${stock} unit${stock === 1 ? "" : "s"} of ${product.name} ${stock === 1 ? "is" : "are"} available.`
+        `Only ${stock} unit${stock === 1 ? "" : "s"} of ${
+          product.name
+        } ${stock === 1 ? "is" : "are"} available.`
       );
       return;
     }
@@ -178,6 +183,25 @@ const Cart = () => {
       delete updated[productId];
       return updated;
     });
+  };
+
+  // =========================
+  // REMOVE ITEM COMPLETELY
+  // =========================
+  const deleteCartItem = (productId) => {
+    const updatedCart = structuredClone(cartItems);
+
+    delete updatedCart[productId];
+
+    setCartItems(updatedCart);
+
+    setCustomQuantities((prev) => {
+      const updated = { ...prev };
+      delete updated[productId];
+      return updated;
+    });
+
+    toast.success("Item removed from cart");
   };
 
   const placeOrder = async () => {
@@ -205,7 +229,9 @@ const Cart = () => {
         return toast.error("Your cart is empty");
       }
 
+      // =========================
       // COD
+      // =========================
       if (paymentOption === "COD") {
         console.log("5. SENDING COD ORDER REQUEST");
 
@@ -229,6 +255,9 @@ const Cart = () => {
         if (data.success) {
           toast.success(data.message);
 
+          // Refresh latest product stock from backend
+          await fetchProducts();
+
           setCartItems({});
 
           console.log("8. ORDER PLACED SUCCESSFULLY");
@@ -239,7 +268,9 @@ const Cart = () => {
         }
       }
 
-      // Online Payment
+      // =========================
+      // ONLINE PAYMENT
+      // =========================
       else if (paymentOption === "Online") {
         console.log("ONLINE PAYMENT SELECTED");
 
@@ -441,11 +472,7 @@ const Cart = () => {
                                         e.target.value
                                       )
                                     }
-                                    value={
-                                      currentQuantity <= 9
-                                        ? String(currentQuantity)
-                                        : String(currentQuantity)
-                                    }
+                                    value={String(currentQuantity)}
                                     className="appearance-none
                                       outline-none bg-transparent
                                       px-2 pr-7 py-1
@@ -510,9 +537,7 @@ const Cart = () => {
                                     }
                                     onKeyDown={(e) => {
                                       if (e.key === "Enter") {
-                                        applyCustomQuantity(
-                                          product
-                                        );
+                                        applyCustomQuantity(product);
                                       }
                                     }}
                                     className="w-16 border
@@ -527,9 +552,7 @@ const Cart = () => {
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      applyCustomQuantity(
-                                        product
-                                      )
+                                      applyCustomQuantity(product)
                                     }
                                     className="px-2.5 py-1
                                       rounded-lg bg-emerald-500
@@ -567,7 +590,7 @@ const Cart = () => {
                         {/* Remove */}
                         <button
                           onClick={() =>
-                            removeFromCart(product._id)
+                            deleteCartItem(product._id)
                           }
                           className="mx-auto w-9 h-9 rounded-full
                             bg-red-50 text-red-500
@@ -638,7 +661,7 @@ const Cart = () => {
 
                               <button
                                 onClick={() =>
-                                  removeFromCart(product._id)
+                                  deleteCartItem(product._id)
                                 }
                                 className="w-8 h-8 shrink-0 rounded-full
                                   bg-red-50 text-red-500
@@ -673,9 +696,7 @@ const Cart = () => {
                                           e.target.value
                                         )
                                       }
-                                      value={String(
-                                        currentQuantity
-                                      )}
+                                      value={String(currentQuantity)}
                                       className="appearance-none
                                         border border-gray-200
                                         rounded-md bg-gray-50
@@ -744,9 +765,7 @@ const Cart = () => {
                                       }
                                       onKeyDown={(e) => {
                                         if (e.key === "Enter") {
-                                          applyCustomQuantity(
-                                            product
-                                          );
+                                          applyCustomQuantity(product);
                                         }
                                       }}
                                       className="w-14 border
@@ -759,9 +778,7 @@ const Cart = () => {
                                     <button
                                       type="button"
                                       onClick={() =>
-                                        applyCustomQuantity(
-                                          product
-                                        )
+                                        applyCustomQuantity(product)
                                       }
                                       className="w-6 h-6
                                         rounded-md

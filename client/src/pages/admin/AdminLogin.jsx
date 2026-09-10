@@ -13,6 +13,7 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -30,7 +31,6 @@ const AdminLogin = () => {
       });
 
       if (data.success) {
-        // Update admin authentication state immediately
         setAdmin(data.admin);
         setIsAdmin(true);
 
@@ -50,72 +50,138 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-sm p-6 md:p-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
-        <div className="text-center mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold">
-            FreshMart
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Admin Login
-          </p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Admin Email
-            </label>
-
-            <input
-              type="email"
-              placeholder="Enter admin email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500"
-            />
+      {/* Top Branding */}
+      <div className="pt-8 sm:pt-10 text-center">
+        <div className="inline-flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+            <span className="text-white font-bold text-lg">
+              F
+            </span>
           </div>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Password
-            </label>
+          <div className="text-left">
+            <h1 className="text-lg font-semibold text-gray-900">
+              FreshMart
+            </h1>
 
-            <input
-              type="password"
-              placeholder="Enter admin password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 outline-none focus:border-indigo-500"
-            />
+            <p className="text-xs text-gray-400">
+              Administration
+            </p>
           </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg py-2.5 cursor-pointer disabled:opacity-60"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-        </form>
-
-        <div className="text-center mt-5">
-          <button
-            onClick={() => navigate("/")}
-            className="text-sm text-gray-500 hover:text-indigo-500 cursor-pointer"
-          >
-            ← Back to FreshMart
-          </button>
         </div>
-
       </div>
+
+      {/* Login Area */}
+      <div className="flex-1 flex items-center justify-center px-4 py-10 sm:px-6">
+
+        <div className="w-full max-w-md">
+
+          {/* Login Card */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm px-5 py-7 sm:px-8 sm:py-9">
+
+            {/* Heading */}
+            <div className="mb-7">
+              <p className="text-sm font-medium text-green-600 mb-2">
+                Welcome back
+              </p>
+
+              <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+                Admin Login
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-2">
+                Sign in to manage your FreshMart marketplace.
+              </p>
+            </div>
+
+            {/* Form */}
+            <form
+              onSubmit={handleLogin}
+              className="space-y-5"
+            >
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Email
+                </label>
+
+                <input
+                  type="email"
+                  placeholder="Enter admin email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
+                  className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter admin password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    className="w-full h-12 px-4 pr-16 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder:text-gray-400 outline-none transition focus:bg-white focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword((prev) => !prev)
+                    }
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 hover:text-gray-800 cursor-pointer"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition cursor-pointer disabled:bg-green-400 disabled:cursor-not-allowed"
+              >
+                {loading
+                  ? "Signing in..."
+                  : "Sign in to Admin Panel"}
+              </button>
+
+            </form>
+
+            {/* Small Protected Text */}
+            <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+              <p className="text-xs text-gray-400">
+                Authorized FreshMart administrators only
+              </p>
+            </div>
+
+          </div>
+
+          {/* Back to Store */}
+          <div className="text-center mt-6">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="text-sm text-gray-500 hover:text-green-600 transition cursor-pointer"
+            >
+              Back to FreshMart
+            </button>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   );
 };
