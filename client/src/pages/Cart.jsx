@@ -34,6 +34,7 @@ const Cart = () => {
   const [showAddress, setShowAddress] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [paymentOption, setPaymentOption] = useState("COD");
+  const [isOnlinePaymentLoading, setIsOnlinePaymentLoading] = useState(false);
 
   const [customQuantities, setCustomQuantities] = useState({});
 
@@ -249,6 +250,7 @@ const Cart = () => {
 
   const handleOnlinePayment = async () => {
     try {
+      setIsOnlinePaymentLoading(true);
       console.log("ONLINE PAYMENT STARTED");
 
       // =========================
@@ -261,6 +263,7 @@ const Cart = () => {
         toast.error(
           "Unable to load Razorpay checkout. Please try again."
         );
+        setIsOnlinePaymentLoading(false);
         return;
       }
 
@@ -293,6 +296,7 @@ const Cart = () => {
 
       if (!data.success) {
         toast.error(data.message);
+        setIsOnlinePaymentLoading(false);
         return;
       }
 
@@ -375,6 +379,7 @@ const Cart = () => {
             // =========================
 
             if (data.success) {
+              setIsOnlinePaymentLoading(false);
               toast.success(
                 "Payment successful! Order placed."
               );
@@ -388,12 +393,14 @@ const Cart = () => {
               // Go to My Orders
               navigate("/my-orders");
             } else {
+              setIsOnlinePaymentLoading(false);
               toast.error(
                 data.message ||
                   "Payment verification failed"
               );
             }
           } catch (error) {
+            setIsOnlinePaymentLoading(false);
             console.error(
               "PAYMENT VERIFICATION ERROR:",
               error
@@ -418,6 +425,7 @@ const Cart = () => {
 
         modal: {
           ondismiss: function () {
+            setIsOnlinePaymentLoading(false);
             console.log(
               "RAZORPAY CHECKOUT CLOSED"
             );
@@ -439,6 +447,7 @@ const Cart = () => {
       razorpay.on(
         "payment.failed",
         function (response) {
+          setIsOnlinePaymentLoading(false);
           console.error(
             "RAZORPAY PAYMENT FAILED:",
             response
@@ -452,7 +461,9 @@ const Cart = () => {
       );
 
       razorpay.open();
+      setIsOnlinePaymentLoading(false);
     } catch (error) {
+      setIsOnlinePaymentLoading(false);
       console.error(
         "ONLINE PAYMENT ERROR:",
         error
@@ -1613,21 +1624,31 @@ const Cart = () => {
               <button
                 type="button"
                 onClick={placeOrder}
-                className="w-full py-3.5 mt-5
-                  cursor-pointer
+                disabled={isOnlinePaymentLoading}
+                className={`w-full py-3.5 mt-5
                   bg-gradient-to-r from-emerald-500
                   to-green-600
                   hover:from-emerald-600
                   hover:to-green-700
                   text-white font-semibold
                   rounded-xl shadow-md
-                  hover:shadow-lg
-                  hover:-translate-y-0.5
-                  transition-all duration-200"
+                  transition-all duration-200
+                  ${
+                    isOnlinePaymentLoading
+                      ? "opacity-80 cursor-not-allowed"
+                      : "cursor-pointer hover:shadow-lg hover:-translate-y-0.5"
+                  }`}
               >
-                {paymentOption === "COD"
-                  ? "Place Order"
-                  : "Proceed to Checkout"}
+                {isOnlinePaymentLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Opening payment...
+                  </span>
+                ) : paymentOption === "COD" ? (
+                  "Place Order"
+                ) : (
+                  "Proceed to Checkout"
+                )}
               </button>
 
               <p className="text-center text-[10px] text-gray-400 mt-2.5">

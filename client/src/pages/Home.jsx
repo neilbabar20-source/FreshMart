@@ -79,7 +79,9 @@ const Home = () => {
       <Category />
 
       {/* Best Sellers */}
-      <BestSeller />
+      <div id="best-sellers">
+        <BestSeller />
+     </div>
 
       {/* Recommended For You */}
       {user && (

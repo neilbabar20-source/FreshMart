@@ -48,6 +48,17 @@ const BestSeller = () => {
         </p>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="mt-5 flex items-center justify-center gap-2">
+          <span className="w-4 h-4 border-2 border-green-500/30 border-t-green-500 rounded-full animate-spin"></span>
+
+          <span className="text-sm font-medium text-gray-500">
+            Best Sellers Loading...
+          </span>
+        </div>
+      )}
+
       {/* Products */}
       <div
         className="
